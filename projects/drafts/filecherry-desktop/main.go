@@ -26,6 +26,8 @@ type Cherry struct {
 	Version     string
 	Installed   bool
 	DownloadURL string
+	Type        string // "desktop" or "mobile"
+	FilePath    string // Path to the actual file
 }
 
 // CherryBowl manages user's installed cherries
@@ -46,7 +48,7 @@ type FileCherryApp struct {
 func NewFileCherryApp() *FileCherryApp {
 	myApp := app.NewWithID("com.filecherry.desktop")
 
-	window := myApp.NewWindow("🍒 FileCherry - Cherry Bowl & Marketplace")
+	window := myApp.NewWindow("🍒 FileCherry - Desktop & Mobile App Maker")
 	window.Resize(fyne.NewSize(1200, 800))
 	window.CenterOnScreen()
 
@@ -71,6 +73,7 @@ func (fc *FileCherryApp) setupUI() {
 		container.NewTabItem("🍒 Marketplace", fc.createMarketplaceTab()),
 		container.NewTabItem("🥣 My Cherry Bowl", fc.createCherryBowlTab()),
 		container.NewTabItem("🤖 AI Builder", fc.createAIBuilderTab()),
+		container.NewTabItem("ℹ️ Why FileCherry?", fc.createWhyDifferentTab()),
 		container.NewTabItem("⚙️ Settings", fc.createSettingsTab()),
 	)
 
@@ -83,7 +86,7 @@ func (fc *FileCherryApp) createHomeTab() fyne.CanvasObject {
 	welcomeTitle.TextStyle.Bold = true
 	welcomeTitle.Alignment = fyne.TextAlignCenter
 
-	welcomeSubtitle := widget.NewLabel("Your Cherry Bowl & Marketplace for Tiny Apps")
+	welcomeSubtitle := widget.NewLabel("Desktop & Mobile App Maker - Choose Your Platform, AI Builds It")
 	welcomeSubtitle.Alignment = fyne.TextAlignCenter
 
 	// Stats section
@@ -276,6 +279,7 @@ func (fc *FileCherryApp) createCherryBowlTab() fyne.CanvasObject {
 			return container.NewHBox(
 				widget.NewLabel("Cherry Name"),
 				widget.NewButton("▶ Run", nil),
+				widget.NewButton("📁", nil), // Reveal/Copy button
 				widget.NewButton("⭐", nil),
 				widget.NewButton("🗑️", nil),
 			)
@@ -287,13 +291,18 @@ func (fc *FileCherryApp) createCherryBowlTab() fyne.CanvasObject {
 				
 				nameLabel := container.Objects[0].(*widget.Label)
 				runBtn := container.Objects[1].(*widget.Button)
-				favBtn := container.Objects[2].(*widget.Button)
-				deleteBtn := container.Objects[3].(*widget.Button)
+				revealBtn := container.Objects[2].(*widget.Button)
+				favBtn := container.Objects[3].(*widget.Button)
+				deleteBtn := container.Objects[4].(*widget.Button)
 				
 				nameLabel.SetText(fmt.Sprintf("%s %s", cherry.Icon, cherry.Name))
 				
 				runBtn.OnTapped = func() {
 					fc.runCherry(cherry)
+				}
+				
+				revealBtn.OnTapped = func() {
+					fc.revealOrCopyCherry(cherry)
 				}
 				
 				favBtn.OnTapped = func() {
@@ -319,8 +328,16 @@ func (fc *FileCherryApp) createCherryBowlTab() fyne.CanvasObject {
 
 func (fc *FileCherryApp) createAIBuilderTab() fyne.CanvasObject {
 	// AI Builder header
-	builderTitle := widget.NewLabel("🤖 AI Cherry Builder")
+	builderTitle := widget.NewLabel("🤖 AI App Builder")
 	builderTitle.TextStyle.Bold = true
+
+	// Platform choice
+	platformLabel := widget.NewLabel("Choose Platform:")
+	platformSelect := widget.NewSelect([]string{"Desktop App", "Mobile App"}, nil)
+	platformSelect.SetSelected("Desktop App")
+
+	platformInfo := widget.NewLabel("Desktop: Native Go + Fyne app | Mobile: Static HTML that works everywhere")
+	platformInfo.TextStyle.Italic = true
 
 	// API Key input
 	apiKeyLabel := widget.NewLabel("AI API Key:")
@@ -328,22 +345,23 @@ func (fc *FileCherryApp) createAIBuilderTab() fyne.CanvasObject {
 	apiKeyEntry.SetPlaceHolder("Enter your AI API key (DeepSeek, OpenAI, etc.)")
 
 	// Cherry description
-	descLabel := widget.NewLabel("Describe your cherry:")
+	descLabel := widget.NewLabel("Describe your app:")
 	descEntry := widget.NewMultiLineEntry()
-	descEntry.SetPlaceHolder("Describe what you want your cherry to do...\n\nExample: 'A simple calculator with basic math operations'")
+	descEntry.SetPlaceHolder("Describe what you want your app to do...\n\nExample: 'A simple calculator with basic math operations'")
 
 	// Build button
-	buildBtn := widget.NewButton("🍒 Build Cherry", func() {
+	buildBtn := widget.NewButton("🍒 Build App", func() {
 		if apiKeyEntry.Text == "" {
 			dialog.ShowInformation("Error", "Please enter an AI API key", fc.window)
 			return
 		}
 		if descEntry.Text == "" {
-			dialog.ShowInformation("Error", "Please describe your cherry", fc.window)
+			dialog.ShowInformation("Error", "Please describe your app", fc.window)
 			return
 		}
 		
-		fc.buildCherryWithAI(apiKeyEntry.Text, descEntry.Text)
+		platform := platformSelect.Selected
+		fc.buildAppWithAI(apiKeyEntry.Text, descEntry.Text, platform)
 	})
 
 	// Recent builds
@@ -366,6 +384,10 @@ func (fc *FileCherryApp) createAIBuilderTab() fyne.CanvasObject {
 	content := container.NewVBox(
 		builderTitle,
 		widget.NewSeparator(),
+		platformLabel,
+		platformSelect,
+		platformInfo,
+		widget.NewSeparator(),
 		apiKeyLabel,
 		apiKeyEntry,
 		widget.NewSeparator(),
@@ -378,6 +400,70 @@ func (fc *FileCherryApp) createAIBuilderTab() fyne.CanvasObject {
 	)
 
 	return content
+}
+
+func (fc *FileCherryApp) createWhyDifferentTab() fyne.CanvasObject {
+	// Why FileCherry header
+	whyTitle := widget.NewLabel("ℹ️ Why FileCherry is Different")
+	whyTitle.TextStyle.Bold = true
+
+	// Main differentiator
+	differentiatorTitle := widget.NewLabel("🎯 Two Platforms, One Experience")
+	differentiatorTitle.TextStyle.Bold = true
+
+	differentiatorText := widget.NewLabel(`FileCherry makes it simple: Choose Desktop or Mobile, AI builds it.
+
+🖥️ DESKTOP APPS (Go + Fyne)
+• Native desktop applications
+• Open in their own window
+• No browser required
+• Cross-platform (macOS, Windows, Linux)
+• Size: 20-30MB
+
+📱 MOBILE APPS (Static HTML)
+• Works on any device with a browser
+• Send via iMessage, email, anywhere
+• No installation required
+• Instant sharing and preview
+• Size: <2MB`)
+
+	// Benefits section
+	benefitsTitle := widget.NewLabel("✨ The FileCherry Advantage")
+	benefitsTitle.TextStyle.Bold = true
+
+	benefitsText := widget.NewLabel(`🚀 INSTANT RESULTS
+• AI builds your app in seconds
+• No complex setup or configuration
+• Ready to use immediately
+
+🎨 DELIGHTFUL UX
+• Focus on end results, not technical details
+• Beautiful, native interfaces
+• Intuitive sharing and management
+
+🔄 SEAMLESS WORKFLOW
+• Everything happens in one app
+• Desktop: Reveal in Finder
+• Mobile: Copy HTML to clipboard
+• Share anywhere, instantly
+
+🤖 AI-POWERED
+• Describe what you want
+• AI handles the technical complexity
+• Multiple AI providers supported`)
+
+	// Layout
+	content := container.NewVBox(
+		whyTitle,
+		widget.NewSeparator(),
+		differentiatorTitle,
+		differentiatorText,
+		widget.NewSeparator(),
+		benefitsTitle,
+		benefitsText,
+	)
+
+	return container.NewScroll(content)
 }
 
 func (fc *FileCherryApp) createSettingsTab() fyne.CanvasObject {
@@ -470,9 +556,19 @@ func (fc *FileCherryApp) runCherry(cherry Cherry) {
 	dialog.ShowInformation("Running Cherry", fmt.Sprintf("Running %s...", cherry.Name), fc.window)
 }
 
-func (fc *FileCherryApp) buildCherryWithAI(apiKey, description string) {
-	// TODO: Implement AI cherry building
-	dialog.ShowInformation("Building Cherry", "Building your cherry with AI...", fc.window)
+func (fc *FileCherryApp) buildAppWithAI(apiKey, description, platform string) {
+	// TODO: Implement AI app building
+	dialog.ShowInformation("Building App", fmt.Sprintf("Building your %s with AI...", platform), fc.window)
+}
+
+func (fc *FileCherryApp) revealOrCopyCherry(cherry Cherry) {
+	if cherry.Type == "desktop" {
+		// Reveal in Finder
+		dialog.ShowInformation("Reveal in Finder", fmt.Sprintf("Opening folder containing %s", cherry.Name), fc.window)
+	} else if cherry.Type == "mobile" {
+		// Copy HTML to clipboard
+		dialog.ShowInformation("Copy HTML", fmt.Sprintf("HTML for %s copied to clipboard! Paste in iMessage, email, anywhere.", cherry.Name), fc.window)
+	}
 }
 
 func getSampleCherries() []Cherry {
@@ -482,52 +578,60 @@ func getSampleCherries() []Cherry {
 			Name:        "Task Manager",
 			Description: "Simple task management with categories and due dates",
 			Category:    "Productivity",
-			Size:        "12 MB",
+			Size:        "25 MB",
 			Downloads:   1247,
-			Features:    []string{"Offline-first", "Categories", "Due dates"},
+			Features:    []string{"Native desktop", "Categories", "Due dates"},
 			Icon:        "✅",
 			Author:      "FileCherry Team",
 			Version:     "1.2.0",
 			Installed:   false,
+			Type:        "desktop",
+			FilePath:    "/Users/home/.filecherry/cherries/task-manager",
 		},
 		{
 			ID:          "expense-tracker",
 			Name:        "Expense Tracker",
 			Description: "Track spending with charts and budgets",
 			Category:    "Personal",
-			Size:        "18 MB",
+			Size:        "1.8 MB",
 			Downloads:   892,
-			Features:    []string{"Charts", "Budgets", "CSV export"},
+			Features:    []string{"Mobile HTML", "Charts", "Budgets"},
 			Icon:        "💰",
 			Author:      "FinanceTools",
 			Version:     "2.0.1",
 			Installed:   false,
+			Type:        "mobile",
+			FilePath:    "/Users/home/.filecherry/cherries/expense-tracker.html",
 		},
 		{
 			ID:          "pixel-art",
 			Name:        "Pixel Art Studio",
 			Description: "Create pixel art with layers and animation",
 			Category:    "Creative",
-			Size:        "25 MB",
+			Size:        "28 MB",
 			Downloads:   2156,
-			Features:    []string{"Layers", "Animation", "Export"},
+			Features:    []string{"Native desktop", "Layers", "Animation"},
 			Icon:        "🎨",
 			Author:      "ArtTools",
 			Version:     "1.5.0",
 			Installed:   false,
+			Type:        "desktop",
+			FilePath:    "/Users/home/.filecherry/cherries/pixel-art",
 		},
 		{
 			ID:          "breathing-app",
 			Name:        "Breathe Easy",
 			Description: "Guided breathing exercises with ambient sounds",
 			Category:    "Health",
-			Size:        "8 MB",
+			Size:        "1.2 MB",
 			Downloads:   3421,
-			Features:    []string{"Guided exercises", "Ambient sounds", "Progress tracking"},
+			Features:    []string{"Mobile HTML", "Guided exercises", "Ambient sounds"},
 			Icon:        "🫁",
 			Author:      "WellnessApps",
 			Version:     "1.0.0",
 			Installed:   false,
+			Type:        "mobile",
+			FilePath:    "/Users/home/.filecherry/cherries/breathing-app.html",
 		},
 	}
 }
