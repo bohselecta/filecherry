@@ -1,0 +1,24 @@
+{
+  "name": "Test",
+  "description": "test",
+  "category": "productivity",
+  "stack": "go-gin",
+  "features": [
+    "Offline-First",
+    "Beautiful UI",
+    "Cross-Platform"
+  ],
+  "size": "12 MB",
+  "commands": [
+    "tinyapp new test --stack go-gin",
+    "tinyapp build"
+  ],
+  "icon": "✅",
+  "technicalDetails": {
+    "frontend": "React with Tailwind CSS, responsive design",
+    "backend": "go-gin server with REST API",
+    "database": "None",
+    "apis": []
+  },
+  "id": "cherry-1761348752846-d02mckmjf"
+}

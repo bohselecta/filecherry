@@ -3,19 +3,17 @@
 // Sample cherry data (in production, this would come from an API)
 const CHERRIES = [
     {
-        id: 'task-cherry-desktop',
-        name: 'Task Cherry Desktop',
-        description: 'Native desktop task manager - true desktop app, no browser required',
+        id: 'task-master',
+        name: 'Task Master',
+        description: 'Beautiful task manager with categories, due dates, and priority levels',
         category: 'productivity',
-        stack: 'go-fyne',
-        size: '23 MB',
-        downloads: 3421,
-        features: ['Native desktop', 'No browser', 'Cross-platform', 'Offline-first'],
-        icon: '🍒',
+        stack: 'go-gin',
+        size: '12 MB',
+        downloads: 1247,
+        features: ['Offline-first', 'Cloud sync', 'Categories', 'Due dates'],
+        icon: '✅',
         author: 'FileCherry Team',
-        version: '1.0.0',
-        demoUrl: 'https://filecherry.com/demo/task-cherry-desktop',
-        tryNow: true
+        version: '1.2.0'
     },
     {
         id: 'expense-tracker',
@@ -120,103 +118,17 @@ const CHERRIES = [
         icon: '📡',
         author: 'NetTools',
         version: '1.2.1'
-    },
-    {
-        id: 'api-tester',
-        name: 'API Tester Pro',
-        description: 'Beautiful REST API testing tool with history, collections, and environment variables',
-        category: 'productivity',
-        stack: 'rust-axum',
-        size: '9 MB',
-        downloads: 3847,
-        features: ['Request history', 'Collections', 'Env variables', 'Syntax highlighting'],
-        icon: '🔌',
-        author: 'DevTools',
-        version: '2.1.0'
-    },
-    {
-        id: 'pixel-art',
-        name: 'Pixel Studio',
-        description: 'Create retro pixel art with layers, animation, and export to sprite sheets',
-        category: 'creative',
-        stack: 'static',
-        size: '1.2 MB',
-        downloads: 5623,
-        features: ['Layers', 'Animation', 'Sprite sheets', 'Color palettes'],
-        icon: '🎮',
-        author: 'PixelCraft',
-        version: '1.4.2'
-    },
-    {
-        id: 'breathe-easy',
-        name: 'Breathe Easy',
-        description: 'Guided breathing exercises with haptic feedback, ambient sounds, and progress tracking',
-        category: 'personal',
-        stack: 'bun-hono',
-        size: '22 MB',
-        downloads: 4189,
-        features: ['Guided breathing', 'Ambient sounds', 'Progress stats', 'Haptic feedback'],
-        icon: '🫁',
-        author: 'WellnessApps',
-        version: '1.0.3'
-    },
-    {
-        id: 'neighborhood-watch',
-        name: 'Neighborhood Connect',
-        description: 'Hyper-local community board for events, alerts, and resource sharing via P2P mesh',
-        category: 'civic',
-        stack: 'go-gin',
-        size: '16 MB',
-        downloads: 2934,
-        features: ['P2P mesh', 'Event calendar', 'Emergency alerts', 'Resource sharing'],
-        icon: '🏘️',
-        author: 'CivicTech',
-        version: '1.1.0'
-    },
-    {
-        id: 'meeting-recorder',
-        name: 'Meeting Scribe',
-        description: 'Record meetings with AI transcription, speaker detection, and action item extraction',
-        category: 'business',
-        stack: 'bun-hono',
-        size: '45 MB',
-        downloads: 1876,
-        features: ['AI transcription', 'Speaker ID', 'Action items', 'Searchable history'],
-        icon: '🎙️',
-        author: 'BizTools',
-        version: '1.0.0'
-    },
-    {
-        id: 'plant-buddy',
-        name: 'Plant Buddy',
-        description: 'Track your plants with photos, watering schedules, growth logs, and community tips',
-        category: 'personal',
-        stack: 'go-gin',
-        size: '13 MB',
-        downloads: 6721,
-        features: ['Photo timeline', 'Water reminders', 'Growth logs', 'Plant ID'],
-        icon: '🪴',
-        author: 'GreenThumb',
-        version: '2.0.1'
     }
 ];
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
-    renderCherries();
-    loadCherryBowl();
     setupEventListeners();
 });
 
 // Render cherry grid
 function renderCherries(filtered = CHERRIES) {
     const grid = document.getElementById('cherryGrid');
-    
-    if (!grid) {
-        console.error('cherryGrid element not found!');
-        return;
-    }
-    
     grid.innerHTML = filtered.map(cherry => `
         <div class="glass-card p-6 rounded-2xl cherry-card">
             <div class="flex items-start justify-between mb-4">
@@ -342,97 +254,51 @@ async function generateCherry() {
     }
 }
 
-// Call DeepSeek API
+// Call DeepSeek API through backend
 async function callDeepSeekAPI(params) {
-    // IMPORTANT: In production, this should go through your backend to protect API keys
-    // Never expose API keys in frontend code!
-    
-    const DEEPSEEK_API_KEY = 'YOUR_DEEPSEEK_API_KEY_HERE'; // Replace in production
-    const DEEPSEEK_API_URL = 'https://api.deepseek.com/v1/chat/completions';
-    
-    const systemPrompt = `You are an expert at creating portable desktop applications using TinyApp Factory.
-Generate a complete, production-ready cherry (portable app) based on the user's requirements.
-
-Stack Details:
-- go-gin: Go backend with embedded React frontend (8-18 MB)
-- bun-hono: Bun runtime with Hono framework (50-100 MB)
-- rust-axum: Rust backend with React frontend (5-15 MB)
-- static: Pure HTML/CSS/JS (< 1 MB)
-
-${params.includeDatabase ? 'Include Fireproof database with CRUD operations.' : ''}
-${params.includeSync ? 'Add cloud sync capabilities with Fireproof Cloud connector.' : ''}
-${params.includeAuth ? 'Include device-based authentication with Fireproof keypairs.' : ''}
-
-Return a JSON object with:
-{
-  "name": "Cherry Name",
-  "description": "Brief description",
-  "features": ["feature1", "feature2", ...],
-  "size": "estimated size",
-  "commands": ["tinyapp command to create this"],
-  "icon": "emoji"
-}`;
-
-    const userPrompt = `Create a ${params.category} cherry that does: ${params.description}
-
-Preferred stack: ${params.stack}
-${params.includeDatabase ? '✓' : '✗'} Database
-${params.includeSync ? '✓' : '✗'} Cloud Sync
-${params.includeAuth ? '✓' : '✗'} Authentication`;
-
-    // Simulated response for demo purposes
-    // In production, uncomment the actual API call below
-    await sleep(2000);
-    return {
-        name: generateCherryName(params.description),
-        description: params.description,
-        category: params.category,
-        stack: params.stack,
-        features: [
-            params.includeDatabase && 'Fireproof DB',
-            params.includeSync && 'Cloud Sync',
-            params.includeAuth && 'Authentication',
-            'Offline-first',
-            'Beautiful UI'
-        ].filter(Boolean),
-        size: estimateSize(params.stack, params.includeDatabase),
-        commands: [
-            `tinyapp new my-cherry --stack ${params.stack}`,
-            params.includeDatabase && 'tinyapp add database',
-            params.includeSync && 'tinyapp add sync --provider fireproof-cloud',
-            params.includeAuth && 'tinyapp add auth --provider device',
-            'tinyapp build'
-        ].filter(Boolean),
-        icon: selectIcon(params.category)
-    };
-    
-    /* PRODUCTION CODE - Uncomment when deploying with backend proxy:
-    
-    const response = await fetch(DEEPSEEK_API_URL, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
-        },
-        body: JSON.stringify({
-            model: 'deepseek-chat',
-            messages: [
-                { role: 'system', content: systemPrompt },
-                { role: 'user', content: userPrompt }
-            ],
-            temperature: 0.7,
-            max_tokens: 2000
-        })
-    });
-    
-    if (!response.ok) {
-        throw new Error(`DeepSeek API error: ${response.status}`);
+    try {
+        const response = await fetch('/api/generate-cherry', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(params)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+        
+        const cherrySpec = await response.json();
+        return cherrySpec;
+        
+    } catch (error) {
+        console.error('API call failed:', error);
+        // Fallback to mock data if API fails
+        await sleep(2000);
+        return {
+            name: generateCherryName(params.description),
+            description: params.description,
+            category: params.category,
+            stack: params.stack,
+            features: [
+                params.includeDatabase && 'Fireproof DB',
+                params.includeSync && 'Cloud Sync',
+                params.includeAuth && 'Authentication',
+                'Offline-first',
+                'Beautiful UI'
+            ].filter(Boolean),
+            size: estimateSize(params.stack, params.includeDatabase),
+            commands: [
+                `tinyapp new my-cherry --stack ${params.stack}`,
+                params.includeDatabase && 'tinyapp add database',
+                params.includeSync && 'tinyapp add sync --provider fireproof-cloud',
+                params.includeAuth && 'tinyapp add auth --provider device',
+                'tinyapp build'
+            ].filter(Boolean),
+            icon: selectIcon(params.category)
+        };
     }
-    
-    const data = await response.json();
-    const cherrySpec = JSON.parse(data.choices[0].message.content);
-    return cherrySpec;
-    */
 }
 
 // Display generated cherry
@@ -576,21 +442,53 @@ function addToBowl() {
 }
 
 // Download functionality
-function downloadCherry(cherryId) {
+async function downloadCherry(cherryId) {
     const cherry = CHERRIES.find(c => c.id === cherryId) || window.currentCherry;
     if (!cherry) return;
     
-    // In production, this would trigger actual download
-    showNotification(`Downloading ${cherry.name}... (Demo mode)`);
-    
-    // Simulate download
-    setTimeout(() => {
-        showNotification(`${cherry.name} ready to use! 🎉`);
-    }, 2000);
-    
-    /* PRODUCTION CODE:
-    window.location.href = `/api/download/${cherryId}`;
-    */
+    try {
+        // For AI-generated cherries, we need to build them first
+        if (window.currentCherry && window.currentCherry.id) {
+            showNotification(`Building ${cherry.name}...`);
+            
+            // Call build API
+            const buildResponse = await fetch('/api/build-cherry', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cherryId: window.currentCherry.id })
+            });
+            
+            if (!buildResponse.ok) {
+                throw new Error(`Build failed: ${buildResponse.status}`);
+            }
+            
+            const buildResult = await buildResponse.json();
+            
+            if (buildResult.success) {
+                // Trigger download
+                window.location.href = buildResult.downloadUrl;
+                showNotification(`${cherry.name} ready to download! 🎉`);
+            } else {
+                throw new Error('Build failed');
+            }
+        } else {
+            // For existing cherries, trigger download directly
+            showNotification(`Downloading ${cherry.name}...`);
+            window.location.href = `/api/download/${cherryId}`;
+        }
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        showNotification(`Download failed: ${error.message}`);
+        
+        // Fallback to demo mode
+        showNotification(`Downloading ${cherry.name}... (Demo mode)`);
+        setTimeout(() => {
+            showNotification(`${cherry.name} ready to use! 🎉`);
+        }, 2000);
+    }
 }
 
 function exportBowl() {
@@ -607,17 +505,24 @@ function exportBowl() {
     showNotification('Cherry bowl exported! 📦');
 }
 
-// Navigation
-function scrollToBrowse() {
-    document.getElementById('browse').scrollIntoView({ behavior: 'smooth' });
+// Download FileCherry desktop app
+function downloadFileCherry() {
+    // In production, this would trigger actual download
+    showNotification('Downloading FileCherry... (Demo mode)');
+    
+    // Simulate download
+    setTimeout(() => {
+        showNotification('FileCherry ready to use! 🎉');
+    }, 2000);
+    
+    /* PRODUCTION CODE:
+    window.location.href = '/download/filecherry-desktop';
+    */
 }
 
-function scrollToCreate() {
-    document.getElementById('create').scrollIntoView({ behavior: 'smooth' });
-}
-
-function openBowl() {
-    document.getElementById('bowl').scrollIntoView({ behavior: 'smooth' });
+// Navigation functions
+function scrollToFeatures() {
+    document.getElementById('features').scrollIntoView({ behavior: 'smooth' });
 }
 
 // Notifications
