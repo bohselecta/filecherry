@@ -1,0 +1,23 @@
+{
+  "name": "{{PROJECT_SLUG}}",
+  "version": "1.0.0",
+  "description": "A lightweight, portable full-stack application built with {{STACK}}",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "build": "bun run build:frontend && bun build --compile --minify --bytecode src/server.ts --outfile {{PROJECT_SLUG}}",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "bun run src/server.ts",
+    "preview": "bun run build && ./{{PROJECT_SLUG}}"
+  },
+  "dependencies": {
+    "hono": "^3.5.2"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

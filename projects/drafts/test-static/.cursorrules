@@ -1,0 +1,17 @@
+# Cursor AI Rules for {{PROJECT_NAME}}
+
+## Project Overview
+This is a {{STACK}} application created with TinyApp Factory.
+Project: {{PROJECT_NAME}}
+Slug: {{PROJECT_SLUG}}
+
+## Architecture Guidelines
+
+### Core Principles
+- Keep the application lightweight and portable
+- Avoid heavy frameworks (NO Next.js, NO Express.js, NO Django)
+- Focus on self-contained, single-binary deployment
+- Optimize for small binary size
+- Use minimal dependencies
+
+### Stack-Specific Patterns

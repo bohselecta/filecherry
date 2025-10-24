@@ -1,0 +1,26 @@
+{
+  "name": "breathe-easy",
+  "version": "1.0.0",
+  "description": "A lightweight, portable full-stack application built with Bun + Hono",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "bun run --hot src/server.ts",
+    "build": "bun run build:frontend && bun build --compile --minify --bytecode src/server.ts --outfile breathe-easy",
+    "build:frontend": "cd frontend && npm run build",
+    "start": "bun run src/server.ts",
+    "preview": "bun run build && ./breathe-easy"
+  },
+  "dependencies": {
+    "hono": "^3.5.2",
+    "@fireproof/core": "^0.19.0",
+    "use-fireproof": "^0.19.0",
+    "@fireproof/cloud": "^0.19.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  }
+}

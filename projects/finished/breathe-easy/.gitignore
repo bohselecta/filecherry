@@ -1,0 +1,10 @@
+# Binaries for {{PROJECT_NAME}}
+# Add the generated binary files here
+
+# Example:
+# {{PROJECT_SLUG}}-linux
+# {{PROJECT_SLUG}}-macos
+# {{PROJECT_SLUG}}.exe
+
+# Bun build artifacts
+*.bun

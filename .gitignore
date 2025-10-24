@@ -1,0 +1,74 @@
+# Dependencies
+node_modules/
+**/node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.exe
+*.app
+*.dmg
+*.deb
+*.rpm
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+
+# Temporary folders
+tmp/
+temp/
+
+# Go specific
+*.test
+*.prof
+
+# Project specific
+projects/drafts/*/node_modules/
+projects/drafts/*/dist/
+projects/drafts/*/build/
+projects/finished/*/node_modules/
+projects/finished/*/dist/
+projects/finished/*/build/
+
+# Keep important project files but ignore build artifacts
+!projects/drafts/*/package.json
+!projects/drafts/*/go.mod
+!projects/drafts/*/Cargo.toml
+!projects/drafts/*/main.go
+!projects/drafts/*/src/
+!projects/drafts/*/frontend/src/
+!projects/finished/*/package.json
+!projects/finished/*/go.mod
+!projects/finished/*/Cargo.toml
+!projects/finished/*/main.go
+!projects/finished/*/src/
+!projects/finished/*/frontend/src/

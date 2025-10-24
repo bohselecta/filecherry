@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🫁 Breathe Easy - Simple Version</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@fireproof/core/dist/browser/fireproof.global.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .breathing-circle {
+            transition: transform 2s ease-in-out;
+        }
+        
+        .breathing-circle.inhale {
+            transform: scale(1.2);
+        }
+        
+        .breathing-circle.exhale {
+            transform: scale(0.8);
+        }
+        
+        .breathing-circle.hold {
+            transform: scale(1.1);
+        }
+        
+        .breathing-circle.pause {
+            transform: scale(1.0);
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-indigo-900 text-white p-8">
+    <div class="container mx-auto max-w-4xl">
+        <header class="text-center mb-12">
+            <h1 class="text-5xl font-bold text-white mb-4">
+                🫁 Breathe Easy
+            </h1>
+            <p class="text-xl text-purple-200">
+                Guided breathing for calm and focus
+            </p>
+        </header>
+
+        <main class="space-y-8">
+            <!-- Breathing Circle -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20 text-center">
+                <div class="relative flex items-center justify-center w-64 h-64 mx-auto mb-8">
+                    <div id="breathingCircle" class="absolute w-full h-full rounded-full bg-blue-500 breathing-circle flex items-center justify-center">
+                        <span id="phaseText" class="text-3xl font-bold text-white">Ready</span>
+                    </div>
+                    <div id="timerDisplay" class="absolute text-6xl font-extrabold text-white z-10">
+                        0
+                    </div>
+                </div>
+                
+                <div class="flex justify-center gap-4">
+                    <button id="startBtn" class="px-6 py-3 bg-green-600 hover:bg-green-700 rounded-full text-lg font-semibold transition-colors">
+                        Start Session
+                    </button>
+                    <button id="stopBtn" class="px-6 py-3 bg-red-600 hover:bg-red-700 rounded-full text-lg font-semibold transition-colors hidden">
+                        Stop Session
+                    </button>
+                </div>
+                
+                <p id="phaseInfo" class="mt-4 text-lg text-purple-200">
+                    Click "Start Session" to begin
+                </p>
+            </div>
+
+            <!-- Technique Selector -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+                <h2 class="text-2xl font-semibold text-white mb-6">
+                    🧘‍♀️ Breathing Techniques
+                </h2>
+                <div class="flex flex-wrap gap-3">
+                    <button class="technique-btn active" data-technique="box">Box Breathing (4-4-4-4)</button>
+                    <button class="technique-btn" data-technique="478">4-7-8 Breathing</button>
+                    <button class="technique-btn" data-technique="wimhof">Wim Hof (2-0-2-0)</button>
+                </div>
+                <p id="techniqueInfo" class="mt-4 text-sm text-white/70">
+                    Pattern: 4-4-4-4 seconds (Inhale-Hold-Exhale-Hold)
+                </p>
+            </div>
+
+            <!-- Progress Stats -->
+            <div class="bg-white/10 backdrop-blur-lg rounded-2xl p-8 border border-white/20">
+                <h2 class="text-2xl font-semibold text-white mb-6">
+                    📊 Your Progress
+                </h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                    <div>
+                        <p id="totalSessions" class="text-4xl font-bold text-purple-300">0</p>
+                        <p class="text-white/70 text-sm mt-1">Total Sessions</p>
+                    </div>
+                    <div>
+                        <p id="totalMinutes" class="text-4xl font-bold text-blue-300">0</p>
+                        <p class="text-white/70 text-sm mt-1">Total Minutes</p>
+                    </div>
+                    <div>
+                        <p id="todaySessions" class="text-4xl font-bold text-green-300">0</p>
+                        <p class="text-white/70 text-sm mt-1">Today's Sessions</p>
+                    </div>
+                    <div>
+                        <p id="streakDays" class="text-4xl font-bold text-yellow-300">0</p>
+                        <p class="text-white/70 text-sm mt-1">Current Streak</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer class="text-center mt-12 text-white/60">
+            <p>Built with ❤️ using TinyApp Factory</p>
+        </footer>
+    </div>
+
+    <script>
+        // Initialize Fireproof database
+        const { fireproof } = Fireproof;
+        const db = fireproof('breathe-easy-simple');
+
+        // Breathing techniques
+        const techniques = {
+            box: { name: 'Box Breathing', pattern: [4, 4, 4, 4] },
+            '478': { name: '4-7-8 Breathing', pattern: [4, 7, 8, 0] },
+            wimhof: { name: 'Wim Hof Method', pattern: [2, 0, 2, 0] }
+        };
+
+        // State
+        let currentTechnique = 'box';
+        let isRunning = false;
+        let currentPhase = 'pause';
+        let phaseIndex = 0;
+        let timer = 0;
+        let sessionDuration = 0;
+        let intervalId = null;
+
+        // DOM elements
+        const breathingCircle = document.getElementById('breathingCircle');
+        const phaseText = document.getElementById('phaseText');
+        const timerDisplay = document.getElementById('timerDisplay');
+        const phaseInfo = document.getElementById('phaseInfo');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const techniqueBtns = document.querySelectorAll('.technique-btn');
+        const techniqueInfo = document.getElementById('techniqueInfo');
+
+        // Progress elements
+        const totalSessions = document.getElementById('totalSessions');
+        const totalMinutes = document.getElementById('totalMinutes');
+        const todaySessions = document.getElementById('todaySessions');
+        const streakDays = document.getElementById('streakDays');
+
+        // Initialize
+        loadProgress();
+        setupEventListeners();
+
+        function setupEventListeners() {
+            startBtn.addEventListener('click', startBreathing);
+            stopBtn.addEventListener('click', stopBreathing);
+            
+            techniqueBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    if (isRunning) return;
+                    
+                    techniqueBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTechnique = btn.dataset.technique;
+                    updateTechniqueInfo();
+                });
+            });
+        }
+
+        function updateTechniqueInfo() {
+            const technique = techniques[currentTechnique];
+            techniqueInfo.textContent = `Pattern: ${technique.pattern.join('-')} seconds (Inhale-Hold-Exhale-Hold)`;
+        }
+
+        function startBreathing() {
+            isRunning = true;
+            startBtn.classList.add('hidden');
+            stopBtn.classList.remove('hidden');
+            
+            phaseIndex = 0;
+            sessionDuration = 0;
+            nextPhase();
+        }
+
+        function stopBreathing() {
+            isRunning = false;
+            startBtn.classList.remove('hidden');
+            stopBtn.classList.add('hidden');
+            
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+            
+            currentPhase = 'pause';
+            breathingCircle.className = 'absolute w-full h-full rounded-full bg-gray-500 breathing-circle flex items-center justify-center';
+            phaseText.textContent = 'Ready';
+            timerDisplay.textContent = '0';
+            phaseInfo.textContent = 'Click "Start Session" to begin';
+            
+            // Save session
+            if (sessionDuration > 0) {
+                saveSession();
+            }
+        }
+
+        function nextPhase() {
+            if (!isRunning) return;
+            
+            const technique = techniques[currentTechnique];
+            const phases = ['inhale', 'hold', 'exhale', 'pause'];
+            const phaseNames = ['Inhale', 'Hold', 'Exhale', 'Pause'];
+            
+            currentPhase = phases[phaseIndex];
+            const phaseName = phaseNames[phaseIndex];
+            timer = technique.pattern[phaseIndex];
+            
+            // Update UI
+            breathingCircle.className = `absolute w-full h-full rounded-full bg-blue-500 breathing-circle ${currentPhase} flex items-center justify-center`;
+            phaseText.textContent = phaseName;
+            timerDisplay.textContent = timer;
+            phaseInfo.textContent = `Current Phase: ${phaseName} (${timer}s)`;
+            
+            // Countdown
+            intervalId = setInterval(() => {
+                timer--;
+                timerDisplay.textContent = timer;
+                sessionDuration++;
+                
+                if (timer <= 0) {
+                    clearInterval(intervalId);
+                    phaseIndex = (phaseIndex + 1) % phases.length;
+                    setTimeout(nextPhase, 500); // Brief pause between phases
+                }
+            }, 1000);
+        }
+
+        async function saveSession() {
+            try {
+                await db.put({
+                    _id: crypto.randomUUID(),
+                    type: 'breathingSession',
+                    technique: techniques[currentTechnique].name,
+                    duration: sessionDuration,
+                    timestamp: Date.now()
+                });
+                loadProgress();
+            } catch (error) {
+                console.error('Error saving session:', error);
+            }
+        }
+
+        async function loadProgress() {
+            try {
+                const { rows } = await db.query('type', { key: 'breathingSession' });
+                const sessions = rows.map(row => row.value);
+                
+                const totalSessionsCount = sessions.length;
+                const totalMinutesCount = Math.floor(sessions.reduce((sum, session) => sum + session.duration, 0) / 60);
+                
+                // Today's sessions
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const todaySessionsCount = sessions.filter(session => 
+                    new Date(session.timestamp) >= today
+                ).length;
+                
+                // Simple streak calculation
+                const streakDaysCount = Math.min(totalSessionsCount, 7);
+                
+                // Update UI
+                totalSessions.textContent = totalSessionsCount;
+                totalMinutes.textContent = totalMinutesCount;
+                todaySessions.textContent = todaySessionsCount;
+                streakDays.textContent = streakDaysCount;
+                
+            } catch (error) {
+                console.error('Error loading progress:', error);
+            }
+        }
+    </script>
+</body>
+</html>

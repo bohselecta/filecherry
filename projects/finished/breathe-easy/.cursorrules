@@ -1,0 +1,79 @@
+# Cursor AI Rules for {{PROJECT_NAME}}
+
+## Project Overview
+This is a {{STACK}} application created with TinyApp Factory.
+Project: {{PROJECT_NAME}}
+Slug: {{PROJECT_SLUG}}
+
+## Architecture Guidelines
+
+### Core Principles
+- Keep the application lightweight and portable
+- Avoid heavy frameworks (NO Next.js, NO Express.js, NO Django)
+- Focus on self-contained, single-binary deployment
+- Optimize for small binary size
+- Use minimal dependencies
+
+### Stack-Specific Patterns
+
+## Bun + Hono Specific Rules
+
+### Backend Structure
+- Use Hono for lightweight HTTP server
+- Keep routes simple and functional
+- Use Bun's built-in bundling for frontend assets
+- Leverage Bun's native TypeScript support
+
+### Code Patterns
+```typescript
+// Simple Hono server setup
+import { Hono } from 'hono'
+import { serveStatic } from 'hono/bun'
+
+const app = new Hono()
+
+// Serve static files
+app.use('/*', serveStatic({ root: './frontend/dist' }))
+
+// API routes
+app.get('/api/health', (c) => c.json({ status: 'ok' }))
+```
+
+### Build Configuration
+- Use `bun build --compile --minify --bytecode` for production
+- Target specific platforms with `--target` flag
+- Bundle frontend assets automatically
+
+### Frontend Integration
+- Build frontend with `npm run build` in frontend/ directory
+- Use Bun's native bundling for optimal performance
+- Keep TypeScript strict mode enabled
+
+## Anti-Patterns to Avoid
+- Don't use heavy frameworks like Express or Fastify
+- Don't add unnecessary TypeScript complexity
+- Don't use external bundlers (use Bun's built-in)
+- Don't create separate build processes
+
+## Fireproof Database Patterns
+
+### Basic Usage
+- Import from @fireproof/core for database operations
+- Use use-fireproof hooks for React components
+- Database name should match project slug
+- Always use async/await for database operations
+
+### Live Queries
+- useLiveQuery automatically updates when data changes
+- No need for manual refresh or polling
+- Perfect for real-time UI updates
+
+### Document Structure
+- Use _id for document identification
+- Add type field for querying by category
+- Include timestamps for sorting
+
+### Anti-Patterns
+- Don't mix Fireproof with other databases
+- Don't use synchronous database calls
+- Don't forget to handle loading states

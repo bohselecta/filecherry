@@ -1,0 +1,79 @@
+# Cursor AI Rules for {{PROJECT_NAME}}
+
+## Project Overview
+This is a {{STACK}} application created with TinyApp Factory.
+Project: {{PROJECT_NAME}}
+Slug: {{PROJECT_SLUG}}
+
+## Architecture Guidelines
+
+### Core Principles
+- Keep the application lightweight and portable
+- Avoid heavy frameworks (NO Next.js, NO Express.js, NO Django)
+- Focus on self-contained, single-binary deployment
+- Optimize for small binary size
+- Use minimal dependencies
+
+### Stack-Specific Patterns
+
+## Go + Gin Specific Rules
+
+### Backend Structure
+- Use `embed.FS` to embed frontend assets in the binary
+- Serve static files from embedded filesystem
+- Keep API endpoints simple and RESTful
+- Use Gin's built-in middleware for CORS, logging, etc.
+
+### Code Patterns
+```go
+// Always use embed for frontend assets
+//go:embed frontend/dist/*
+var frontend embed.FS
+
+// Serve static files
+r.StaticFS("/", http.FS(frontend))
+
+// API endpoints should be simple
+r.GET("/api/health", func(c *gin.Context) {
+    c.JSON(200, gin.H{"status": "ok"})
+})
+```
+
+### Build Optimization
+- Use `-ldflags="-s -w"` for smaller binaries
+- Cross-compile with `GOOS=linux GOARCH=amd64 go build`
+- Minimize dependencies in go.mod
+
+### Frontend Integration
+- Build frontend with `npm run build` in frontend/ directory
+- Frontend assets are automatically embedded
+- Use relative API calls (`/api/`) not absolute URLs
+
+## Anti-Patterns to Avoid
+- Don't use heavy ORMs (use sqlite3 directly)
+- Don't add unnecessary middleware
+- Don't use external template engines (use embedded HTML)
+- Don't create separate frontend/backend repos
+
+## Fireproof Database Patterns
+
+### Basic Usage
+- Import from @fireproof/core for database operations
+- Use use-fireproof hooks for React components
+- Database name should match project slug
+- Always use async/await for database operations
+
+### Live Queries
+- useLiveQuery automatically updates when data changes
+- No need for manual refresh or polling
+- Perfect for real-time UI updates
+
+### Document Structure
+- Use _id for document identification
+- Add type field for querying by category
+- Include timestamps for sorting
+
+### Anti-Patterns
+- Don't mix Fireproof with other databases
+- Don't use synchronous database calls
+- Don't forget to handle loading states
