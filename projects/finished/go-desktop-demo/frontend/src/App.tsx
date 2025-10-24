@@ -180,35 +180,39 @@ function App() {
             </div>
           </div>
 
-          {/* Features Card */}
+          {/* Developer Tools Card */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mt-8 border border-white/20">
             <h2 className="text-2xl font-semibold text-white mb-6">
-              🍒 Cherry Management Features
+              🛠️ Developer Tools
             </h2>
-            <div className="grid md:grid-cols-2 gap-4 text-white/80">
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>Cherry Bowl Management</span>
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <button
+                  onClick={() => window.open('http://localhost:3000', '_blank')}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                >
+                  Open Backend API
+                </button>
+                <button
+                  onClick={() => {
+                    const dbInfo = {
+                      name: 'go-desktop-demo',
+                      documents: dbStatus.documents,
+                      size: dbStatus.size,
+                      lastModified: Date.now()
+                    }
+                    console.log('Database Info:', dbInfo)
+                    alert('Database info logged to console')
+                  }}
+                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+                >
+                  Log DB Info
+                </button>
               </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>TinyApp Factory Integration</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>Project Creation Wizard</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>One-Click Fireproof Database</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>Build & Deploy Projects</span>
-              </div>
-              <div className="flex items-center space-x-3">
-                <span className="text-green-400">✅</span>
-                <span>Native Desktop Performance</span>
+              <div className="text-sm text-white/60">
+                <p>• Backend API: <code className="bg-white/10 px-2 py-1 rounded">http://localhost:3000</code></p>
+                <p>• Database: Fireproof with live queries</p>
+                <p>• Hot Reload: Enabled for development</p>
               </div>
             </div>
           </div>

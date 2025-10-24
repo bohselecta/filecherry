@@ -19,6 +19,9 @@ export function CherryBowl() {
   const [newCherryCategory, setNewCherryCategory] = useState('productivity')
   const [newCherryStack, setNewCherryStack] = useState('go-gin')
   const [showShareDialog, setShowShareDialog] = useState(false)
+  const [showAIBuilder, setShowAIBuilder] = useState(false)
+  const [aiDescription, setAiDescription] = useState('')
+  const [aiGenerating, setAiGenerating] = useState(false)
   const [selectedCherry, setSelectedCherry] = useState<Cherry | null>(null)
 
   const cherries = useCherries() as Cherry[]
@@ -60,6 +63,56 @@ export function CherryBowl() {
       })
       setShowShareDialog(false)
       setSelectedCherry(null)
+    }
+  }
+
+  const handleAIGenerate = async () => {
+    if (!aiDescription.trim()) return
+
+    setAiGenerating(true)
+    try {
+      // Call the backend API to generate cherry
+      const response = await fetch('/api/generate-cherry', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          description: aiDescription,
+          category: 'productivity', // Default category
+          stack: 'go-gin', // Default stack
+          includeDatabase: true,
+          includeSync: false,
+          includeAuth: false
+        })
+      })
+
+      if (response.ok) {
+        const cherrySpec = await response.json()
+        
+        // Add the generated cherry to the bowl
+        await addCherry({
+          name: cherrySpec.name,
+          description: cherrySpec.description,
+          category: cherrySpec.category,
+          stack: cherrySpec.stack,
+          size: cherrySpec.size,
+          metadata: {
+            generatedBy: 'AI',
+            originalDescription: aiDescription,
+            features: cherrySpec.features
+          }
+        })
+
+        setAiDescription('')
+        setShowAIBuilder(false)
+      } else {
+        console.error('Failed to generate cherry:', response.statusText)
+      }
+    } catch (error) {
+      console.error('Error generating cherry:', error)
+    } finally {
+      setAiGenerating(false)
     }
   }
 
@@ -135,6 +188,12 @@ export function CherryBowl() {
           className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
         >
           Add Cherry
+        </button>
+        <button
+          onClick={() => setShowAIBuilder(true)}
+          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+        >
+          🤖 AI Builder
         </button>
       </div>
 
@@ -232,14 +291,38 @@ export function CherryBowl() {
         </div>
       )}
 
-      {/* Stats */}
-      <div className="mt-4 pt-4 border-t border-white/10">
-        <div className="flex justify-between text-sm text-white/60">
-          <span>Total: {cherries.length}</span>
-          <span>Running: {cherries.filter(c => c.isRunning).length}</span>
-          <span>Stopped: {cherries.filter(c => !c.isRunning).length}</span>
+      {/* AI Builder Dialog */}
+      {showAIBuilder && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20 max-w-md w-full mx-4">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              🤖 AI Cherry Builder
+            </h3>
+            <p className="text-white/70 mb-4">
+              Describe what you want your cherry to do, and AI will generate it for you.
+            </p>
+            <textarea
+              value={aiDescription}
+              onChange={(e) => setAiDescription(e.target.value)}
+              placeholder="Example: A task manager that syncs between my devices with categories and due dates..."
+              rows={4}
+              className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 mb-4 resize-none"
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={handleAIGenerate}
+                disabled={!aiDescription.trim() || aiGenerating}
+                className="flex-1 px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
+              >
+                {aiGenerating ? 'Generating...' : 'Generate Cherry'}
+              </button>
+              <button
+                onClick={() => setShowAIBuilder(false)}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  )
-}
+      )}

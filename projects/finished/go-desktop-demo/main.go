@@ -166,6 +166,11 @@ func main() {
 		showInstallDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
+	// Settings button
+	settingsButton := widget.NewButton("⚙️ Settings", func() {
+		showSettingsDialog(myWindow)
+	})
+
 	// Initial cherry list
 	refreshCherryList()
 
@@ -206,7 +211,7 @@ func main() {
 	// Input container
 	inputContainer := container.NewVBox(
 		widget.NewLabel("Add Cherries to Your Bowl:"),
-		container.NewHBox(browseMarketplaceButton, installFromFileButton),
+		container.NewHBox(browseMarketplaceButton, installFromFileButton, settingsButton),
 	)
 
 	// Main content
@@ -368,6 +373,59 @@ func showMarketplaceDialog(parent fyne.Window, cherryManager *CherryManager, ref
 func showInstallDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
 	// This would open a file dialog to install cherries from local files
 	dialog.ShowInformation("Install from File", "This feature will allow you to install cherries from local .exe/.app files", parent)
+}
+
+func showSettingsDialog(parent fyne.Window) {
+	// Create settings content
+	generalLabel := widget.NewLabel("General Settings")
+	generalLabel.TextStyle.Bold = true
+
+	// Auto-update setting
+	autoUpdateCheck := widget.NewCheck("Enable auto-updates", nil)
+	autoUpdateCheck.SetChecked(true)
+
+	// Storage path setting
+	storagePathLabel := widget.NewLabel("Storage Path:")
+	storagePathEntry := widget.NewEntry()
+	storagePathEntry.SetText("~/FileCherry")
+	storagePathButton := widget.NewButton("Browse", func() {
+		// This would open a folder picker dialog
+		dialog.ShowInformation("Browse Folder", "This would open a folder picker dialog", parent)
+	})
+
+	// AI API Key setting
+	aiKeyLabel := widget.NewLabel("AI API Key (for AI Builder):")
+	aiKeyEntry := widget.NewEntry()
+	aiKeyEntry.SetPlaceHolder("Enter your DeepSeek or OpenAI API key")
+	aiKeyEntry.SetText("")
+
+	// About section
+	aboutLabel := widget.NewLabel("About FileCherry")
+	aboutLabel.TextStyle.Bold = true
+	versionLabel := widget.NewLabel("Version: 1.0.0")
+	buildLabel := widget.NewLabel("Build: Desktop Manager")
+	authorLabel := widget.NewLabel("Built with TinyApp Factory")
+
+	// Settings content
+	content := container.NewVBox(
+		generalLabel,
+		widget.NewSeparator(),
+		autoUpdateCheck,
+		widget.NewSeparator(),
+		storagePathLabel,
+		container.NewHBox(storagePathEntry, storagePathButton),
+		widget.NewSeparator(),
+		aiKeyLabel,
+		aiKeyEntry,
+		widget.NewSeparator(),
+		aboutLabel,
+		widget.NewSeparator(),
+		versionLabel,
+		buildLabel,
+		authorLabel,
+	)
+
+	dialog.ShowCustom("Settings", "Close", content, parent)
 }
 
 func formatTime(t time.Time) string {
