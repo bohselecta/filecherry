@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"os/exec"
-	"path/filepath"
 	"time"
 
 	"fyne.io/fyne/v2"
@@ -145,19 +143,6 @@ func main() {
 
 	statsLabel := widget.NewLabelWithData(statsBinding)
 
-	// Cherry input form
-	nameInput := widget.NewEntry()
-	nameInput.SetPlaceHolder("Cherry name")
-
-	descInput := widget.NewEntry()
-	descInput.SetPlaceHolder("Description")
-
-	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
-	categorySelect.SetSelected("productivity")
-
-	stackSelect := widget.NewSelect([]string{"go-gin", "go-fyne", "bun-hono", "rust-axum", "tauri-react", "static"}, nil)
-	stackSelect.SetSelected("go-gin")
-
 	// Cherry list container
 	cherryList := container.NewVBox()
 
@@ -171,24 +156,14 @@ func main() {
 		}
 	}
 
-	// Add cherry button
-	addButton := widget.NewButton("🍒 Add Cherry", func() {
-		name := nameInput.Text
-		desc := descInput.Text
-		category := categorySelect.Selected
-		stack := stackSelect.Selected
-		if name != "" && desc != "" {
-			cherryManager.AddCherry(name, desc, category, stack)
-			nameInput.SetText("")
-			descInput.SetText("")
-			refreshCherryList()
-			updateStats()
-		}
+	// Browse marketplace button
+	browseMarketplaceButton := widget.NewButton("🛒 Browse Marketplace", func() {
+		showMarketplaceDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Create new project button
-	createProjectButton := widget.NewButton("🚀 Create New Project", func() {
-		showCreateProjectDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Install from file button
+	installFromFileButton := widget.NewButton("📁 Install from File", func() {
+		showInstallDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
 	// Initial cherry list
@@ -230,16 +205,8 @@ func main() {
 
 	// Input container
 	inputContainer := container.NewVBox(
-		widget.NewLabel("Add New Cherry:"),
-		nameInput,
-		descInput,
-		container.NewHBox(
-			widget.NewLabel("Category:"),
-			categorySelect,
-			widget.NewLabel("Stack:"),
-			stackSelect,
-		),
-		container.NewHBox(addButton, createProjectButton),
+		widget.NewLabel("Add Cherries to Your Bowl:"),
+		container.NewHBox(browseMarketplaceButton, installFromFileButton),
 	)
 
 	// Main content
@@ -308,19 +275,6 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 		updateStats()
 	})
 
-	// Build button
-	buildButton := widget.NewButton("🔨 Build", func() {
-		go func() {
-			err := buildProjectCLI(cherry.Name)
-			if err != nil {
-				// Show error dialog
-				fmt.Printf("Build error: %v\n", err)
-			} else {
-				fmt.Printf("Build successful for %s\n", cherry.Name)
-			}
-		}()
-	})
-
 	// Delete button
 	deleteButton := widget.NewButton("🗑️", func() {
 		cherryManager.DeleteCherry(cherry.ID)
@@ -340,142 +294,80 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 			cherryDesc,
 			stackLabel,
 		),
-		container.NewHBox(runButton, buildButton, deleteButton),
+		container.NewHBox(runButton, deleteButton),
 		timeLabel,
 	)
 
 	return cherryItem
 }
 
-func showCreateProjectDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
-	// Create dialog content
-	nameEntry := widget.NewEntry()
-	nameEntry.SetPlaceHolder("Project name")
+func showMarketplaceDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Sample marketplace cherries
+	marketplaceCherries := []Cherry{
+		{
+			ID:          "market-1",
+			Name:        "Task Master",
+			Description: "Beautiful task manager with categories and due dates",
+			Category:    "productivity",
+			Stack:       "go-gin",
+			Size:        "12 MB",
+		},
+		{
+			ID:          "market-2",
+			Name:        "Note Taker",
+			Description: "Quick note-taking utility with markdown support",
+			Category:    "productivity",
+			Stack:       "static",
+			Size:        "800 KB",
+		},
+		{
+			ID:          "market-3",
+			Name:        "Color Palette",
+			Description: "Generate beautiful color schemes with AI",
+			Category:    "creative",
+			Stack:       "static",
+			Size:        "600 KB",
+		},
+		{
+			ID:          "market-4",
+			Name:        "Invoice Generator",
+			Description: "Professional invoices with PDF export",
+			Category:    "business",
+			Stack:       "go-gin",
+			Size:        "14 MB",
+		},
+	}
 
-	descEntry := widget.NewEntry()
-	descEntry.SetPlaceHolder("Project description")
-
-	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
-	categorySelect.SetSelected("productivity")
-
-	stackSelect := widget.NewSelect([]string{"go-gin", "go-fyne", "bun-hono", "rust-axum", "tauri-react", "static"}, nil)
-	stackSelect.SetSelected("go-gin")
-
-	includeDatabase := widget.NewCheck("Include Fireproof Database", nil)
-	includeDatabase.SetChecked(true)
-
-	includeSync := widget.NewCheck("Enable Cloud Sync", nil)
-	includeAuth := widget.NewCheck("Add Authentication", nil)
-
-	content := container.NewVBox(
-		widget.NewLabel("Create New Cherry Project"),
-		widget.NewSeparator(),
-		nameEntry,
-		descEntry,
-		container.NewHBox(
-			widget.NewLabel("Category:"),
-			categorySelect,
-		),
-		container.NewHBox(
-			widget.NewLabel("Stack:"),
-			stackSelect,
-		),
-		widget.NewSeparator(),
-		widget.NewLabel("Features:"),
-		includeDatabase,
-		includeSync,
-		includeAuth,
-	)
-
-	dialog.ShowCustomConfirm("Create New Project", "Create", "Cancel", content, func(confirmed bool) {
-		if confirmed {
-			name := nameEntry.Text
-			desc := descEntry.Text
-			category := categorySelect.Selected
-			stack := stackSelect.Selected
-
-			if name != "" && desc != "" {
-				// Add to cherry manager
-				cherryManager.AddCherry(name, desc, category, stack)
+	// Create marketplace list
+	marketplaceList := container.NewVBox()
+	for _, cherry := range marketplaceCherries {
+		item := container.NewBorder(
+			nil, nil,
+			container.NewVBox(
+				widget.NewLabel(cherry.Name),
+				widget.NewLabel(cherry.Description),
+				widget.NewLabel(fmt.Sprintf("%s • %s", cherry.Category, cherry.Size)),
+			),
+			widget.NewButton("Install", func() {
+				// Add to cherry bowl
+				cherryManager.AddCherry(cherry.Name, cherry.Description, cherry.Category, cherry.Stack)
 				refreshList()
 				updateStats()
+				dialog.ShowInformation("Installed", fmt.Sprintf("Cherry '%s' added to your bowl!", cherry.Name), parent)
+			}),
+		)
+		marketplaceList.Add(item)
+	}
 
-				// Show success message
-				dialog.ShowInformation("Success", fmt.Sprintf("Cherry '%s' added to your bowl!", name), parent)
+	scrollContainer := container.NewScroll(marketplaceList)
+	scrollContainer.SetMinSize(fyne.NewSize(600, 400))
 
-				// Integrate with TinyApp Factory CLI
-				go func() {
-					err := createProjectWithCLI(name, stack, includeDatabase.Checked, includeSync.Checked, includeAuth.Checked)
-					if err != nil {
-						dialog.ShowError(err, parent)
-					} else {
-						dialog.ShowInformation("Project Created", fmt.Sprintf("Project '%s' created successfully with TinyApp Factory!", name), parent)
-					}
-				}()
-			}
-		}
-	}, parent)
+	dialog.ShowCustom("Cherry Marketplace", "Close", scrollContainer, parent)
 }
 
-func createProjectWithCLI(name, stack string, includeDB, includeSync, includeAuth bool) error {
-	// Get the TinyApp Factory CLI path
-	cliPath := filepath.Join("..", "..", "cli.js")
-	
-	// Create the project using TinyApp Factory
-	cmd := exec.Command("node", cliPath, "new", "--name", name, "--stack", stack)
-	
-	// Set working directory to the TinyApp Factory root
-	cmd.Dir = filepath.Join("..", "..")
-	
-	// Run the command
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to create project: %v\nOutput: %s", err, string(output))
-	}
-	
-	fmt.Printf("Project created successfully: %s\n", name)
-	fmt.Printf("Output: %s\n", string(output))
-	
-	// Add additional features if requested
-	if includeDB {
-		addFeatureCLI(name, "database", "fireproof")
-	}
-	if includeSync {
-		addFeatureCLI(name, "sync", "fireproof-cloud")
-	}
-	if includeAuth {
-		addFeatureCLI(name, "auth", "device")
-	}
-	
-	return nil
-}
-
-func addFeatureCLI(projectName, feature, provider string) {
-	cliPath := filepath.Join("..", "..", "cli.js")
-	cmd := exec.Command("node", cliPath, "add", feature, "--provider", provider, "--project", projectName)
-	cmd.Dir = filepath.Join("..", "..")
-	
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		fmt.Printf("Failed to add %s feature: %v\nOutput: %s\n", feature, err, string(output))
-	} else {
-		fmt.Printf("Added %s feature successfully\n", feature)
-	}
-}
-
-func buildProjectCLI(projectName string) error {
-	cliPath := filepath.Join("..", "..", "cli.js")
-	cmd := exec.Command("node", cliPath, "build", "--project", projectName)
-	cmd.Dir = filepath.Join("..", "..")
-	
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to build project: %v\nOutput: %s", err, string(output))
-	}
-	
-	fmt.Printf("Project built successfully: %s\n", projectName)
-	fmt.Printf("Output: %s\n", string(output))
-	return nil
+func showInstallDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// This would open a file dialog to install cherries from local files
+	dialog.ShowInformation("Install from File", "This feature will allow you to install cherries from local .exe/.app files", parent)
 }
 
 func formatTime(t time.Time) string {

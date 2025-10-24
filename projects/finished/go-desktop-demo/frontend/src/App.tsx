@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { useDatabaseStatus, useTodoOperations } from './hooks/useDatabase'
-import { TodoList } from './components/TodoList'
+import { useDatabaseStatus, useCherryOperations } from './hooks/useDatabase'
+import { CherryBowl } from './components/CherryBowl'
 import './App.css'
 
 interface HealthResponse {
@@ -13,10 +13,10 @@ function App() {
   const [health, setHealth] = useState<HealthResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [showTodoDemo, setShowTodoDemo] = useState(false)
+  const [showCherryBowl, setShowCherryBowl] = useState(false)
   
   const dbStatus = useDatabaseStatus()
-  const { addTodo } = useTodoOperations()
+  const { addCherry } = useCherryOperations()
 
   useEffect(() => {
     const checkHealth = async () => {
@@ -127,25 +127,31 @@ function App() {
 
               <div className="flex gap-2">
                 <button
-                  onClick={() => setShowTodoDemo(!showTodoDemo)}
+                  onClick={() => setShowCherryBowl(!showCherryBowl)}
                   className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors"
                 >
-                  {showTodoDemo ? 'Hide' : 'Show'} Todo Demo
+                  {showCherryBowl ? 'Hide' : 'Show'} Cherry Bowl
                 </button>
                 <button
-                  onClick={() => addTodo('Sample todo from demo!')}
+                  onClick={() => addCherry({
+                    name: 'Sample Cherry',
+                    description: 'A sample cherry for testing',
+                    category: 'productivity',
+                    stack: 'go-gin',
+                    size: '12 MB'
+                  })}
                   className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >
-                  Add Sample Data
+                  Add Sample Cherry
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Todo Demo */}
-          {showTodoDemo && (
+          {/* Cherry Bowl Demo */}
+          {showCherryBowl && (
             <div className="mb-8">
-              <TodoList />
+              <CherryBowl />
             </div>
           )}
 

@@ -86,33 +86,95 @@ export function useTodoOperations() {
   return { addTodo, toggleTodo, deleteTodo }
 }
 
-export function useNoteOperations() {
-  const addNote = async (title: string, content: string) => {
+// Cherry management hooks
+export function useCherries() {
+  const result = useLiveQuery('type', { key: 'cherry' })
+  return result.docs || []
+}
+
+export function useCherryOperations() {
+  const addCherry = async (cherry: any) => {
     return await db.put({
       _id: crypto.randomUUID(),
-      type: 'note',
-      title,
-      content,
+      type: 'cherry',
+      name: cherry.name,
+      description: cherry.description,
+      category: cherry.category,
+      stack: cherry.stack,
+      size: cherry.size,
+      path: cherry.path,
       created: Date.now(),
-      updated: Date.now()
+      isRunning: false,
+      metadata: cherry.metadata || {}
     })
   }
 
-  const updateNote = async (id: string, title: string, content: string) => {
-    const note = await db.get(id)
-    if (note) {
+  const updateCherry = async (id: string, updates: any) => {
+    const cherry = await db.get(id)
+    if (cherry) {
       return await db.put({
-        ...note,
-        title,
-        content,
+        ...cherry,
+        ...updates,
         updated: Date.now()
       })
     }
   }
 
-  const deleteNote = async (id: string) => {
+  const deleteCherry = async (id: string) => {
     return await db.del(id)
   }
 
-  return { addNote, updateNote, deleteNote }
+  const toggleCherryRunning = async (id: string, isRunning: boolean) => {
+    const cherry = await db.get(id)
+    if (cherry) {
+      return await db.put({
+        ...cherry,
+        isRunning,
+        lastRun: isRunning ? Date.now() : cherry.lastRun,
+        updated: Date.now()
+      })
+    }
+  }
+
+  return { addCherry, updateCherry, deleteCherry, toggleCherryRunning }
+}
+
+// Project sharing hooks
+export function useProjectSharing() {
+  const shareProject = async (projectId: string, shareOptions: any) => {
+    const project = await db.get(projectId)
+    if (project) {
+      const shareData = {
+        _id: crypto.randomUUID(),
+        type: 'shared-project',
+        projectId,
+        projectData: project,
+        shareOptions,
+        sharedAt: Date.now(),
+        expiresAt: shareOptions.expiresAt || (Date.now() + 7 * 24 * 60 * 60 * 1000)
+      }
+      
+      return await db.put(shareData)
+    }
+  }
+
+  const getSharedProjects = async () => {
+    return await db.query('type', { key: 'shared-project' })
+  }
+
+  const importSharedProject = async (shareId: string) => {
+    const shareData = await db.get(shareId)
+    if (shareData && shareData.type === 'shared-project') {
+      const cherry = {
+        ...shareData.projectData,
+        _id: crypto.randomUUID(),
+        importedAt: Date.now(),
+        importedFrom: shareId
+      }
+      
+      return await db.put(cherry)
+    }
+  }
+
+  return { shareProject, getSharedProjects, importSharedProject }
 }

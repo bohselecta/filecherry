@@ -50,13 +50,80 @@ export async function getAllNotes() {
   return await db.query('type', { key: 'note' })
 }
 
-// Database status and info
-export async function getDatabaseInfo() {
-  const stats = await db.stats()
-  return {
-    name: 'go-desktop-demo',
-    documents: stats.documents || 0,
-    size: stats.size || 0,
-    lastModified: stats.lastModified || Date.now()
+// Cherry management functions
+export async function saveCherry(cherry: any) {
+  return await db.put({
+    _id: crypto.randomUUID(),
+    type: 'cherry',
+    name: cherry.name,
+    description: cherry.description,
+    category: cherry.category,
+    stack: cherry.stack,
+    size: cherry.size,
+    path: cherry.path,
+    created: Date.now(),
+    lastRun: cherry.lastRun,
+    isRunning: cherry.isRunning || false,
+    metadata: cherry.metadata || {}
+  })
+}
+
+export async function getAllCherries() {
+  return await db.query('type', { key: 'cherry' })
+}
+
+export async function getCherryById(id: string) {
+  return await db.get(id)
+}
+
+export async function updateCherry(id: string, updates: any) {
+  const cherry = await db.get(id)
+  if (cherry) {
+    return await db.put({
+      ...cherry,
+      ...updates,
+      updated: Date.now()
+    })
+  }
+}
+
+export async function deleteCherry(id: string) {
+  return await db.del(id)
+}
+
+// Project sharing functions
+export async function shareProject(projectId: string, shareOptions: any) {
+  const project = await db.get(projectId)
+  if (project) {
+    const shareData = {
+      _id: crypto.randomUUID(),
+      type: 'shared-project',
+      projectId,
+      projectData: project,
+      shareOptions,
+      sharedAt: Date.now(),
+      expiresAt: shareOptions.expiresAt || (Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days default
+    }
+    
+    return await db.put(shareData)
+  }
+}
+
+export async function getSharedProjects() {
+  return await db.query('type', { key: 'shared-project' })
+}
+
+export async function importSharedProject(shareId: string) {
+  const shareData = await db.get(shareId)
+  if (shareData && shareData.type === 'shared-project') {
+    // Import the project as a new cherry
+    const cherry = {
+      ...shareData.projectData,
+      _id: crypto.randomUUID(),
+      importedAt: Date.now(),
+      importedFrom: shareId
+    }
+    
+    return await db.put(cherry)
   }
 }
