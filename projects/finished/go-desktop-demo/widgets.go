@@ -36,9 +36,7 @@ func NewCherryCard(cherry Cherry, onRun, onDelete, onShare func(), refresher, up
 
 // CreateRenderer creates the renderer for the cherry card
 func (c *CherryCard) CreateRenderer() fyne.WidgetRenderer {
-	return &cherryCardRenderer{
-		card: c,
-	}
+	return NewCherryCardRenderer(c)
 }
 
 // cherryCardRenderer handles the rendering of cherry cards
@@ -205,16 +203,16 @@ func (r *cherryCardRenderer) Destroy() {}
 func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 	cherry := card.cherry
 	
-	// Background
-	background := canvas.NewRectangle(color.RGBA{R: 30, G: 30, B: 30, A: 255})
-	background.StrokeColor = color.RGBA{R: 60, G: 60, B: 60, A: 255}
+	// Background with glass morphism effect
+	background := canvas.NewRectangle(color.RGBA{R: 45, G: 21, B: 21, A: 255}) // Cherry dark background
+	background.StrokeColor = color.RGBA{R: 255, G: 255, B: 255, A: 25} // Subtle white border
 	background.StrokeWidth = 1
 	
-	// Cherry icon
+	// Cherry icon with gradient effect
 	cherryIcon := canvas.NewText("🍒", color.RGBA{R: 255, G: 23, B: 68, A: 255})
-	cherryIcon.TextSize = 24
+	cherryIcon.TextSize = 28
 	
-	// Labels
+	// Labels with proper hierarchy
 	titleLabel := widget.NewLabel(cherry.Name)
 	titleLabel.TextStyle.Bold = true
 	
@@ -231,7 +229,7 @@ func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 	timeLabel := widget.NewLabel(formatTime(cherry.CreatedAt))
 	timeLabel.TextStyle.Italic = true
 	
-	// Buttons
+	// Buttons with cherry styling
 	runButton := widget.NewButton("▶ Run", card.onRun)
 	if cherry.IsRunning {
 		runButton.SetText("⏹ Stop")
@@ -276,7 +274,7 @@ func NewHeroCard(cherry Cherry) *HeroCard {
 
 // CreateRenderer creates the renderer for the hero card
 func (h *HeroCard) CreateRenderer() fyne.WidgetRenderer {
-	return &heroCardRenderer{hero: h}
+	return NewHeroCardRenderer(h)
 }
 
 // heroCardRenderer handles the rendering of hero cards
@@ -409,16 +407,16 @@ func (r *heroCardRenderer) Destroy() {}
 func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 	cherry := hero.cherry
 	
-	// Background with subtle border
-	background := canvas.NewRectangle(color.RGBA{R: 40, G: 40, B: 40, A: 255})
-	background.StrokeColor = color.RGBA{R: 255, G: 23, B: 68, A: 255}
+	// Background with cherry glow effect
+	background := canvas.NewRectangle(color.RGBA{R: 45, G: 21, B: 21, A: 255}) // Cherry dark background
+	background.StrokeColor = color.RGBA{R: 255, G: 23, B: 68, A: 255} // Cherry red border
 	background.StrokeWidth = 2
 	
-	// Large cherry icon
+	// Large cherry icon with gradient effect
 	cherryIcon := canvas.NewText("🍒", color.RGBA{R: 255, G: 23, B: 68, A: 255})
-	cherryIcon.TextSize = 48
+	cherryIcon.TextSize = 56
 	
-	// Labels
+	// Labels with proper hierarchy
 	titleLabel := widget.NewLabel(cherry.Name)
 	titleLabel.TextStyle.Bold = true
 	titleLabel.Alignment = fyne.TextAlignCenter
@@ -435,7 +433,7 @@ func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 		statusLabel.SetText("🟢 Running")
 	}
 	
-	// Run button
+	// Run button with cherry styling
 	runButton := widget.NewButton("▶ Run Cherry", func() {
 		// This would be connected to the cherry manager
 	})

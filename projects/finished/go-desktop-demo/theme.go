@@ -16,7 +16,7 @@ func (t *FileCherryTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVari
 	case theme.ColorNamePrimary:
 		return color.RGBA{R: 255, G: 23, B: 68, A: 255} // Cherry red #ff1744
 	case theme.ColorNameBackground:
-		return color.RGBA{R: 18, G: 18, B: 18, A: 255} // Dark background
+		return color.RGBA{R: 26, G: 10, B: 10, A: 255} // Dark cherry background #1a0a0a
 	case theme.ColorNameOverlayBackground:
 		return color.RGBA{R: 0, G: 0, B: 0, A: 200} // Semi-transparent overlay
 	case theme.ColorNameSuccess:
@@ -36,9 +36,11 @@ func (t *FileCherryTheme) Color(name fyne.ThemeColorName, variant fyne.ThemeVari
 	case theme.ColorNameSeparator:
 		return color.RGBA{R: 60, G: 60, B: 60, A: 255} // Subtle separators
 	case theme.ColorNameInputBackground:
-		return color.RGBA{R: 40, G: 40, B: 40, A: 255} // Input background
+		return color.RGBA{R: 45, G: 21, B: 21, A: 255} // Cherry dark input background
 	case theme.ColorNameInputBorder:
 		return color.RGBA{R: 80, G: 80, B: 80, A: 255} // Input border
+	case theme.ColorNameForeground:
+		return color.RGBA{R: 255, G: 255, B: 255, A: 255} // White text
 	default:
 		return theme.DarkTheme().Color(name, variant)
 	}

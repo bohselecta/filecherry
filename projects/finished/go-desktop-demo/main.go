@@ -152,7 +152,7 @@ func main() {
 	refreshCherryList = func() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
-			cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats)
+			cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats, myWindow)
 			cherryList.Add(cherryItem)
 		}
 	}
@@ -187,7 +187,7 @@ func main() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
 			if cherry.IsRunning {
-				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats)
+				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats, myWindow)
 				cherryList.Add(cherryItem)
 			}
 		}
@@ -196,7 +196,7 @@ func main() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
 			if !cherry.IsRunning {
-				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats)
+				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats, myWindow)
 				cherryList.Add(cherryItem)
 			}
 		}
@@ -254,7 +254,7 @@ func main() {
 	myWindow.ShowAndRun()
 }
 
-func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList func(), updateStats func()) *fyne.Container {
+func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList func(), updateStats func(), parent fyne.Window) *fyne.Container {
 	// Create beautiful cherry card
 	cherryCard := NewCherryCard(cherry, 
 		func() {
@@ -289,7 +289,7 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 		},
 		func() {
 			// Share functionality
-			dialog.ShowInformation("Share Cherry", fmt.Sprintf("Sharing cherry '%s' with Fireproof sync!", cherry.Name), nil)
+			dialog.ShowInformation("Share Cherry", fmt.Sprintf("Sharing cherry '%s' with Fireproof sync!", cherry.Name), parent)
 		},
 		refreshList,
 		updateStats,
