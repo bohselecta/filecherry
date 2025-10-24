@@ -3,419 +3,191 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FileCherry - Portable Tools You Can Share</title>
-    <link rel="icon" type="image/png" href="filecherry-logo-graphic-mark.png">
+    <title>FileCherry - Your Cherry Bowl & Marketplace</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-        
-        * {
-            font-family: 'Inter', sans-serif;
-        }
-        
-        body {
-            background: linear-gradient(135deg, #1a0a0a 0%, #2d1515 50%, #1a0a0a 100%);
-            min-height: 100vh;
-        }
-        
         .cherry-gradient {
-            background: linear-gradient(135deg, #ff1744 0%, #d50000 50%, #b71c1c 100%);
+            background: linear-gradient(135deg, #ff6b6b, #ff8e8e, #ffa8a8);
         }
-        
-        .cherry-glow {
-            box-shadow: 0 0 40px rgba(255, 23, 68, 0.3), 0 0 80px rgba(255, 23, 68, 0.1);
-        }
-        
-        .glass-card {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .cherry-shine {
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .cherry-shine::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
-            animation: shine 3s infinite;
-        }
-        
-        @keyframes shine {
-            0% { left: -100%; }
-            100% { left: 100%; }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-        
-        .float {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes pulse-glow {
-            0%, 100% { box-shadow: 0 0 20px rgba(255, 23, 68, 0.4); }
-            50% { box-shadow: 0 0 40px rgba(255, 23, 68, 0.8); }
-        }
-        
-        .pulse-glow {
-            animation: pulse-glow 2s ease-in-out infinite;
-        }
-        
-        .cherry-card {
-            transition: all 0.3s ease;
-        }
-        
-        .cherry-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(255, 23, 68, 0.4);
-        }
-        
-        .tag {
-            background: rgba(255, 23, 68, 0.2);
-            color: #ff1744;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-        }
-        
-        input::placeholder {
-            color: rgba(255, 255, 255, 0.4);
-        }
-        
-        .gradient-text {
-            background: linear-gradient(135deg, #ff1744 0%, #ff6b9d 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
+        .cherry-shadow {
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
         }
     </style>
 </head>
-<body class="text-white">
-    <!-- Navigation -->
-    <nav class="fixed w-full top-0 z-50 glass-card">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div class="flex items-center gap-3">
-                <img src="filecherry-logo-graphic-mark.png" alt="FileCherry" class="h-12 w-auto float">
-                <div>
-                    <div class="text-2xl font-bold gradient-text">FileCherry</div>
-                    <div class="text-xs text-white/60">Portable Tools, Shareable Everywhere</div>
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-6">
+                <div class="flex items-center">
+                    <img src="filecherry-logo-graphic-mark.png" alt="FileCherry" class="h-12 w-auto">
+                    <span class="ml-3 text-2xl font-bold text-gray-900">FileCherry</span>
                 </div>
-            </div>
-            <div class="flex items-center gap-6">
-                <a href="#browse" class="hover:text-red-400 transition-colors">Browse</a>
-                <a href="#create" class="hover:text-red-400 transition-colors">Create</a>
-                <a href="#bowl" class="hover:text-red-400 transition-colors">My Bowl</a>
-                <button onclick="openBowl()" class="cherry-gradient px-6 py-2 rounded-full font-semibold hover:opacity-90 transition-opacity pulse-glow flex items-center gap-2">
-                        <img src="filecherry-logo-graphic-mark.png" alt="Cherry" class="h-5 w-auto">
-                    My Cherries
-                </button>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="#features" class="text-gray-600 hover:text-gray-900">Features</a>
+                    <a href="#download" class="text-gray-600 hover:text-gray-900">Download</a>
+                    <a href="#demo" class="text-gray-600 hover:text-gray-900">Demo</a>
+                </nav>
             </div>
         </div>
-    </nav>
+    </header>
 
     <!-- Hero Section -->
-    <section class="pt-32 pb-20 px-6">
-        <div class="max-w-7xl mx-auto text-center">
-            <div class="mb-8 flex justify-center">
-                    <img src="filecherry-logo-graphic-mark.png" alt="FileCherry" class="h-24 w-auto float">
-            </div>
-            <h1 class="text-6xl md:text-7xl font-bold mb-6">
-                Portable Tools<br/>
-                <span class="gradient-text">You Can Share</span>
+    <section class="cherry-gradient py-20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl font-bold text-white mb-6">
+                🍒 Your Cherry Bowl & Marketplace
             </h1>
-            <p class="text-xl text-white/70 mb-12 max-w-2xl mx-auto">
-                Download tiny, powerful apps called "cherries" that run anywhere. 
-                No installation, no servers, just double-click and go.
+            <p class="text-xl text-white mb-8 max-w-3xl mx-auto">
+                FileCherry is a native desktop application that lets you discover, install, and manage tiny apps called "cherries" in your personal cherry bowl.
             </p>
-            <div class="flex gap-4 justify-center flex-wrap">
-                <button onclick="scrollToCreate()" class="cherry-gradient cherry-glow px-8 py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity">
-                    🤖 Create Your Cherry with AI
-                </button>
-                <button onclick="scrollToBrowse()" class="glass-card px-8 py-4 rounded-full font-bold text-lg hover:bg-white/10 transition-colors">
-                    Browse Cherries
-                </button>
-            </div>
-            
-            <!-- Stats -->
-            <div class="grid grid-cols-3 gap-8 max-w-3xl mx-auto mt-20">
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-4xl font-bold gradient-text">15</div>
-                    <div class="text-white/60 mt-2">Cherries</div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-4xl font-bold gradient-text">~12MB</div>
-                    <div class="text-white/60 mt-2">Avg Size</div>
-                </div>
-                <div class="glass-card p-6 rounded-2xl">
-                    <div class="text-4xl font-bold gradient-text">100%</div>
-                    <div class="text-white/60 mt-2">Offline</div>
-                </div>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                <a href="#download" class="bg-white text-red-500 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-colors">
+                    📥 Download FileCherry
+                </a>
+                <a href="#demo" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-red-500 transition-colors">
+                    🎮 Try Demo Cherry
+                </a>
             </div>
         </div>
     </section>
 
-    <!-- Features -->
-    <section class="py-20 px-6">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-16">Why Cherries?</h2>
+    <!-- What is FileCherry -->
+    <section id="features" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">What is FileCherry?</h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto">
+                    FileCherry is a native desktop application that works like an app store for tiny, portable applications called "cherries".
+                </p>
+            </div>
+
             <div class="grid md:grid-cols-3 gap-8">
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">💾</div>
-                    <h3 class="text-xl font-bold mb-3">Truly Portable</h3>
-                    <p class="text-white/70">Single executables from 1-50MB. Download once, run anywhere. macOS, Windows, Linux.</p>
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🍒</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Cherry Marketplace</h3>
+                    <p class="text-gray-600">
+                        Browse and discover tiny apps built with Go, Rust, Bun, and more. Each cherry is a self-contained, portable application.
+                    </p>
                 </div>
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">🔒</div>
-                    <h3 class="text-xl font-bold mb-3">Privacy First</h3>
-                    <p class="text-white/70">Data stays on your device. Optional sync with end-to-end encryption. You control everything.</p>
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🥣</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Cherry Bowl</h3>
+                    <p class="text-gray-600">
+                        Install cherries into your personal cherry bowl. Organize, favorite, and manage your collection of tiny apps.
+                    </p>
                 </div>
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">⚡</div>
-                    <h3 class="text-xl font-bold mb-3">Zero Dependencies</h3>
-                    <p class="text-white/70">No Node. No Docker. No database servers. Just double-click and it works instantly.</p>
-                </div>
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">🔄</div>
-                    <h3 class="text-xl font-bold mb-3">Optional Sync</h3>
-                    <p class="text-white/70">Start local, add sync later. Share with team or keep it personal. Powered by Fireproof.</p>
-                </div>
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">🎨</div>
-                    <h3 class="text-xl font-bold mb-3">Beautiful UI</h3>
-                    <p class="text-white/70">Modern, responsive interfaces built with React and Tailwind. Desktop-quality in tiny packages.</p>
-                </div>
-                <div class="glass-card p-8 rounded-2xl cherry-card">
-                    <div class="text-5xl mb-4">🤝</div>
-                    <h3 class="text-xl font-bold mb-3">Easy Sharing</h3>
-                    <p class="text-white/70">Send cherries to friends via link. They download, double-click, done. No accounts needed.</p>
+                <div class="text-center p-6">
+                    <div class="text-6xl mb-4">🤖</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">AI Builder</h3>
+                    <p class="text-gray-600">
+                        Use AI to generate custom cherries. Describe what you want, and FileCherry will build it for you using TinyApp Factory.
+                    </p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Browse Cherries -->
-    <section id="browse" class="py-20 px-6">
-        <div class="max-w-7xl mx-auto">
-            <h2 class="text-4xl font-bold text-center mb-12">Browse Cherries</h2>
-            
-            <!-- Search & Filter -->
-            <div class="glass-card p-6 rounded-2xl mb-12">
-                <div class="flex gap-4 flex-wrap">
-                    <input 
-                        type="text" 
-                        placeholder="Search cherries..." 
-                        class="flex-1 bg-white/10 border border-white/20 rounded-full px-6 py-3 text-white focus:outline-none focus:border-red-400"
-                        id="searchInput"
-                        oninput="filterCherries()"
-                    />
-                    <select class="bg-white/10 border border-white/20 rounded-full px-6 py-3 text-white focus:outline-none focus:border-red-400" id="categoryFilter" onchange="filterCherries()">
-                        <option value="all">All Categories</option>
-                        <option value="productivity">Productivity</option>
-                        <option value="creative">Creative</option>
-                        <option value="civic">Civic</option>
-                        <option value="business">Business</option>
-                        <option value="personal">Personal</option>
-                    </select>
-                    <select class="bg-white/10 border border-white/20 rounded-full px-6 py-3 text-white focus:outline-none focus:border-red-400" id="stackFilter" onchange="filterCherries()">
-                        <option value="all">All Stacks</option>
-                        <option value="go-gin">Go + Gin</option>
-                        <option value="bun-hono">Bun + Hono</option>
-                        <option value="rust-axum">Rust + Axum</option>
-                        <option value="static">Static HTML</option>
-                    </select>
+    <!-- Download Section -->
+    <section id="download" class="py-20 bg-gray-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-8">Download FileCherry</h2>
+            <p class="text-xl text-gray-600 mb-12">
+                Get the native desktop application for macOS, Windows, and Linux
+            </p>
+
+            <div class="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">🍎</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">macOS</h3>
+                    <p class="text-gray-600 mb-6">Native macOS application</p>
+                    <a href="#" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                        Download for macOS
+                    </a>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">🪟</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Windows</h3>
+                    <p class="text-gray-600 mb-6">Native Windows application</p>
+                    <a href="#" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                        Download for Windows
+                    </a>
+                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg">
+                    <div class="text-4xl mb-4">🐧</div>
+                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Linux</h3>
+                    <p class="text-gray-600 mb-6">Native Linux application</p>
+                    <a href="#" class="bg-gray-900 text-white px-6 py-3 rounded-lg font-semibold hover:bg-gray-800 transition-colors">
+                        Download for Linux
+                    </a>
                 </div>
             </div>
 
-            <!-- Cherry Grid -->
-            <div id="cherryGrid" class="grid md:grid-cols-3 gap-6">
-                <!-- Cherries will be populated by JavaScript -->
+            <div class="mt-12 p-6 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <p class="text-yellow-800">
+                    <strong>Note:</strong> FileCherry is currently in development. Downloads will be available soon!
+                </p>
             </div>
         </div>
     </section>
 
-    <!-- AI Cherry Creator -->
-    <section id="create" class="py-20 px-6">
-        <div class="max-w-4xl mx-auto">
-            <div class="glass-card p-12 rounded-3xl cherry-glow">
-                <div class="text-center mb-8">
-                    <div class="flex justify-center items-center gap-4 mb-4">
-                        <div class="text-6xl">🤖</div>
-                        <img src="filecherry-logo-graphic-mark.png" alt="Cherry" class="h-16 w-auto">
-                    </div>
-                    <h2 class="text-4xl font-bold mb-4">Create Your Cherry with AI</h2>
-                    <p class="text-white/70">Describe what you need and let DeepSeek generate a custom cherry for you</p>
-                </div>
-                
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-semibold mb-2">What should your cherry do?</label>
-                        <textarea 
-                            id="cherryDescription"
-                            rows="4"
-                            placeholder="Example: A task manager that syncs between my devices with categories and due dates..."
-                            class="w-full bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-white focus:outline-none focus:border-red-400 resize-none"
-                        ></textarea>
-                    </div>
-                    
-                    <div class="grid md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Category</label>
-                            <select id="aiCategory" class="w-full bg-white/10 border border-white/20 rounded-full px-6 py-3 text-white focus:outline-none focus:border-red-400">
-                                <option value="productivity">Productivity</option>
-                                <option value="creative">Creative</option>
-                                <option value="civic">Civic</option>
-                                <option value="business">Business</option>
-                                <option value="personal">Personal</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold mb-2">Preferred Stack</label>
-                            <select id="aiStack" class="w-full bg-white/10 border border-white/20 rounded-full px-6 py-3 text-white focus:outline-none focus:border-red-400">
-                                <option value="go-gin">Go + Gin (8-18 MB)</option>
-                                <option value="bun-hono">Bun + Hono (50-100 MB)</option>
-                                <option value="rust-axum">Rust + Axum (5-15 MB)</option>
-                                <option value="static">Static HTML (&lt;1 MB)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="flex items-center gap-4">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="includeDatabase" checked class="w-5 h-5 rounded">
-                            <span>Include Fireproof database</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="includeSync" class="w-5 h-5 rounded">
-                            <span>Enable cloud sync</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="includeAuth" class="w-5 h-5 rounded">
-                            <span>Add authentication</span>
-                        </label>
-                    </div>
-                    
-                    <button 
-                        onclick="generateCherry()"
-                        class="w-full cherry-gradient py-4 rounded-full font-bold text-lg hover:opacity-90 transition-opacity cherry-shine"
-                    >
-                        🤖 Generate My Cherry
-                    </button>
-                    
-                    <!-- Generation Status -->
-                    <div id="generationStatus" class="hidden mt-6 p-6 bg-white/5 rounded-2xl">
-                        <div class="flex items-center gap-3 mb-4">
-                            <div class="w-8 h-8 border-4 border-red-400 border-t-transparent rounded-full animate-spin"></div>
-                            <span class="font-semibold">Generating your cherry...</span>
-                        </div>
-                        <div id="generationLog" class="space-y-2 text-sm text-white/70">
-                            <!-- Log messages will appear here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Generated Cherry Display -->
-                    <div id="generatedCherry" class="hidden mt-6 p-6 glass-card rounded-2xl">
-                        <h3 class="text-xl font-bold mb-4">🎉 Your Cherry is Ready!</h3>
-                        <div id="cherryDetails" class="space-y-3">
-                            <!-- Cherry details will be populated -->
-                        </div>
-                        <div class="flex gap-4 mt-6">
-                            <button onclick="downloadCherry()" class="flex-1 cherry-gradient py-3 rounded-full font-semibold">
-                                ⬇️ Download Cherry
-                            </button>
-                            <button onclick="addToBowl()" class="flex-1 glass-card py-3 rounded-full font-semibold hover:bg-white/10 flex items-center justify-center gap-2">
-                                <img src="filecherry-logo-graphic-mark.png" alt="Cherry" class="h-5 w-auto">
-                                Add to My Bowl
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+    <!-- Demo Section -->
+    <section id="demo" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-4xl font-bold text-gray-900 mb-8">Try a Demo Cherry</h2>
+            <p class="text-xl text-gray-600 mb-12">
+                Experience what a cherry looks like with this interactive demo
+            </p>
 
-    <!-- Cherry Bowl -->
-    <section id="bowl" class="py-20 px-6">
-        <div class="max-w-7xl mx-auto">
-            <div class="flex items-center justify-between mb-12">
-                <div>
-                    <h2 class="text-4xl font-bold mb-2">My Cherry Bowl</h2>
-                    <p class="text-white/60">Your personal collection of portable tools</p>
-                </div>
-                <button onclick="exportBowl()" class="glass-card px-6 py-3 rounded-full font-semibold hover:bg-white/10">
-                    📦 Export Bowl
-                </button>
-            </div>
-            
-            <div id="cherryBowl" class="grid md:grid-cols-4 gap-6">
-                <!-- User's cherries will be displayed here -->
-                <div class="glass-card p-8 rounded-2xl text-center">
-                    <div class="text-5xl mb-4">➕</div>
-                    <p class="text-white/60">Add your first cherry to get started</p>
-                    <button onclick="scrollToBrowse()" class="mt-4 cherry-gradient px-4 py-2 rounded-full text-sm font-semibold">
-                        Browse Cherries
-                    </button>
+            <div class="max-w-2xl mx-auto">
+                <div class="bg-gray-900 text-white p-8 rounded-lg shadow-lg">
+                    <h3 class="text-2xl font-bold mb-4">🍒 Task Cherry - Demo</h3>
+                    <p class="text-gray-300 mb-6">
+                        A simple task management cherry built with Go + Fyne. This is what cherries look like when you run them!
+                    </p>
+                    <div class="bg-gray-800 p-4 rounded mb-6">
+                        <div class="text-sm text-gray-400 mb-2">Task Cherry Desktop App</div>
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded">
+                                <span>Welcome to your new Go desktop app! 🍒</span>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" class="rounded">
+                                <span>This is a native desktop application</span>
+                            </div>
+                        </div>
+                    </div>
+                    <a href="task-cherry-desktop.tar.gz" class="bg-red-500 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-600 transition-colors">
+                        📥 Download Task Cherry Demo
+                    </a>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Footer -->
-    <footer class="py-12 px-6 border-t border-white/10">
-        <div class="max-w-7xl mx-auto">
-            <div class="grid md:grid-cols-4 gap-8">
-                <div>
-                    <div class="flex items-center gap-2 mb-4">
-                        <img src="filecherry-logo-graphic-mark.png" alt="FileCherry" class="h-8 w-auto">
-                        <div class="text-xl font-bold gradient-text">FileCherry</div>
-                    </div>
-                    <p class="text-white/60 text-sm">Portable tools you can share, powered by TinyApp Factory</p>
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <img src="filecherry-logo-graphic-mark.png" alt="FileCherry" class="h-12 w-auto mx-auto mb-4">
+                <h3 class="text-2xl font-bold mb-4">FileCherry</h3>
+                <p class="text-gray-400 mb-6">
+                    Your Cherry Bowl & Marketplace for Tiny Apps
+                </p>
+                <div class="flex justify-center space-x-6">
+                    <a href="https://github.com/bohselecta/filecherry" class="text-gray-400 hover:text-white">
+                        GitHub
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        Documentation
+                    </a>
+                    <a href="#" class="text-gray-400 hover:text-white">
+                        Support
+                    </a>
                 </div>
-                <div>
-                    <h3 class="font-bold mb-4">Resources</h3>
-                    <div class="space-y-2 text-sm text-white/60">
-                        <a href="#" class="block hover:text-red-400">Documentation</a>
-                        <a href="#" class="block hover:text-red-400">TinyApp Factory</a>
-                        <a href="#" class="block hover:text-red-400">GitHub</a>
-                        <a href="#" class="block hover:text-red-400">Discord Community</a>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="font-bold mb-4">Categories</h3>
-                    <div class="space-y-2 text-sm text-white/60">
-                        <a href="#" class="block hover:text-red-400">Productivity</a>
-                        <a href="#" class="block hover:text-red-400">Creative Tools</a>
-                        <a href="#" class="block hover:text-red-400">Civic Apps</a>
-                        <a href="#" class="block hover:text-red-400">Business Tools</a>
-                    </div>
-                </div>
-                <div>
-                    <h3 class="font-bold mb-4">Technology</h3>
-                    <div class="space-y-2 text-sm text-white/60">
-                        <a href="#" class="block hover:text-red-400">Fireproof DB</a>
-                        <a href="#" class="block hover:text-red-400">React</a>
-                        <a href="#" class="block hover:text-red-400">Go, Bun, Rust</a>
-                        <a href="#" class="block hover:text-red-400">Tailwind CSS</a>
-                    </div>
-                </div>
-            </div>
-            <div class="mt-12 pt-8 border-t border-white/10 text-center text-white/60 text-sm">
-                © 2025 FileCherry. Portable tools, shareable everywhere. 
-                <img src="filecherry-logo-graphic-mark.png" alt="Cherry" class="h-4 w-auto inline ml-1">
             </div>
         </div>
     </footer>
-
-    <script src="app.js"></script>
 </body>
 </html>
