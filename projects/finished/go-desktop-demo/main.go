@@ -113,12 +113,13 @@ func estimateSize(stack string) string {
 }
 
 func main() {
-	// Create the app
+	// Create the app with custom theme
 	myApp := app.NewWithID("com.filecherry.desktop")
+	myApp.Settings().SetTheme(NewFileCherryTheme())
 
 	// Create the main window
 	myWindow := myApp.NewWindow("🍒 FileCherry Desktop - Cherry Bowl Manager")
-	myWindow.Resize(fyne.NewSize(1000, 700))
+	myWindow.Resize(fyne.NewSize(1200, 800))
 	myWindow.CenterOnScreen()
 
 	// Initialize cherry manager
@@ -214,12 +215,33 @@ func main() {
 		container.NewHBox(browseMarketplaceButton, installFromFileButton, settingsButton),
 	)
 
-	// Main content
+	// Create hero section with main cherry
+	var heroCherry Cherry
+	if len(cherryManager.GetCherries()) > 0 {
+		heroCherry = cherryManager.GetCherries()[0]
+	} else {
+		heroCherry = Cherry{
+			ID:          "hero",
+			Name:        "Welcome to FileCherry!",
+			Description: "Your cherry bowl is empty. Browse the marketplace to add your first cherry!",
+			Category:    "welcome",
+			Stack:       "static",
+			Size:        "0 MB",
+			CreatedAt:   time.Now(),
+		}
+	}
+	
+	heroCard := NewHeroCard(heroCherry)
+	heroContainer := container.NewPadded(heroCard)
+
+	// Main content with hero section
 	content := container.NewVBox(
 		title,
 		subtitle,
 		widget.NewSeparator(),
 		statsLabel,
+		widget.NewSeparator(),
+		heroContainer,
 		widget.NewSeparator(),
 		inputContainer,
 		widget.NewSeparator(),
@@ -233,77 +255,48 @@ func main() {
 }
 
 func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList func(), updateStats func()) *fyne.Container {
-	// Cherry name
-	cherryName := widget.NewLabel(cherry.Name)
-	cherryName.TextStyle.Bold = true
-
-	// Cherry description
-	cherryDesc := widget.NewLabel(cherry.Description)
-	cherryDesc.TextStyle.Italic = true
-
-	// Stack and size info
-	stackLabel := widget.NewLabel(fmt.Sprintf("%s • %s", cherry.Stack, cherry.Size))
-
-	// Status indicator
-	statusIcon := "⏸️"
-	if cherry.IsRunning {
-		statusIcon = "🟢"
-	}
-	statusLabel := widget.NewLabel(statusIcon)
-
-	// Run/Stop button
-	runButtonText := "▶ Run"
-	if cherry.IsRunning {
-		runButtonText = "⏹ Stop"
-	}
-	runButton := widget.NewButton(runButtonText, func() {
-		if cherry.IsRunning {
-			// Stop cherry
-			for i, c := range cherryManager.cherries {
-				if c.ID == cherry.ID {
-					cherryManager.cherries[i].IsRunning = false
-					break
+	// Create beautiful cherry card
+	cherryCard := NewCherryCard(cherry, 
+		func() {
+			// Run/Stop functionality
+			if cherry.IsRunning {
+				// Stop cherry
+				for i, c := range cherryManager.cherries {
+					if c.ID == cherry.ID {
+						cherryManager.cherries[i].IsRunning = false
+						break
+					}
+				}
+			} else {
+				// Run cherry
+				for i, c := range cherryManager.cherries {
+					if c.ID == cherry.ID {
+						cherryManager.cherries[i].IsRunning = true
+						now := time.Now()
+						cherryManager.cherries[i].LastRun = &now
+						break
+					}
 				}
 			}
-		} else {
-			// Run cherry
-			for i, c := range cherryManager.cherries {
-				if c.ID == cherry.ID {
-					cherryManager.cherries[i].IsRunning = true
-					now := time.Now()
-					cherryManager.cherries[i].LastRun = &now
-					break
-				}
-			}
-		}
-		refreshList()
-		updateStats()
-	})
-
-	// Delete button
-	deleteButton := widget.NewButton("🗑️", func() {
-		cherryManager.DeleteCherry(cherry.ID)
-		refreshList()
-		updateStats()
-	})
-
-	// Created time
-	timeLabel := widget.NewLabel(formatTime(cherry.CreatedAt))
-	timeLabel.TextStyle.Italic = true
-
-	// Cherry item container
-	cherryItem := container.NewBorder(
-		nil, nil,
-		container.NewVBox(
-			container.NewHBox(cherryName, statusLabel),
-			cherryDesc,
-			stackLabel,
-		),
-		container.NewHBox(runButton, deleteButton),
-		timeLabel,
+			refreshList()
+			updateStats()
+		},
+		func() {
+			// Delete functionality
+			cherryManager.DeleteCherry(cherry.ID)
+			refreshList()
+			updateStats()
+		},
+		func() {
+			// Share functionality
+			dialog.ShowInformation("Share Cherry", fmt.Sprintf("Sharing cherry '%s' with Fireproof sync!", cherry.Name), nil)
+		},
+		refreshList,
+		updateStats,
 	)
-
-	return cherryItem
+	
+	// Wrap in container with padding
+	return container.NewPadded(cherryCard)
 }
 
 func showMarketplaceDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
