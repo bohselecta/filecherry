@@ -44,10 +44,10 @@ function App() {
         {/* Header */}
         <header className="text-center mb-12">
           <h1 className="text-5xl font-bold text-white mb-4">
-            go-desktop-demo
+            🍒 FileCherry Desktop
           </h1>
           <p className="text-xl text-purple-200">
-            Built with Go + Gin • TinyApp Factory
+            Cherry Bowl & Project Manager • Built with Go + Gin • TinyApp Factory
           </p>
         </header>
 
@@ -177,32 +177,32 @@ function App() {
           {/* Features Card */}
           <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-8 mt-8 border border-white/20">
             <h2 className="text-2xl font-semibold text-white mb-6">
-              ✨ Features
+              🍒 Cherry Management Features
             </h2>
             <div className="grid md:grid-cols-2 gap-4 text-white/80">
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Single binary deployment</span>
+                <span>Cherry Bowl Management</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Embedded frontend assets</span>
+                <span>TinyApp Factory Integration</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Hot reload development</span>
+                <span>Project Creation Wizard</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Health check API</span>
+                <span>One-Click Fireproof Database</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Modern React UI</span>
+                <span>Build & Deploy Projects</span>
               </div>
               <div className="flex items-center space-x-3">
                 <span className="text-green-400">✅</span>
-                <span>Tailwind CSS styling</span>
+                <span>Native Desktop Performance</span>
               </div>
             </div>
           </div>
