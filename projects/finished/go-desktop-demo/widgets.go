@@ -151,14 +151,9 @@ func (r *cherryCardRenderer) Refresh() {
 	r.timeLabel.SetText(formatTime(cherry.CreatedAt))
 	r.timeLabel.TextStyle.Italic = true
 	
-	// Update run button
-	if cherry.IsRunning {
-		r.runButton.SetText("⏹ Stop")
-		r.runButton.Importance = widget.DangerImportance
-	} else {
-		r.runButton.SetText("▶ Run")
-		r.runButton.Importance = widget.HighImportance
-	}
+	// Update open button
+	r.runButton.SetText("📂 Open")
+	r.runButton.Importance = widget.HighImportance
 	
 	// Update background color based on status
 	if cherry.IsRunning {
@@ -230,13 +225,8 @@ func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 	timeLabel.TextStyle.Italic = true
 	
 	// Buttons with cherry styling
-	runButton := widget.NewButton("▶ Run", card.onRun)
-	if cherry.IsRunning {
-		runButton.SetText("⏹ Stop")
-		runButton.Importance = widget.DangerImportance
-	} else {
-		runButton.Importance = widget.HighImportance
-	}
+	openButton := widget.NewButton("📂 Open", card.onRun)
+	openButton.Importance = widget.HighImportance
 	
 	shareButton := widget.NewButton("📤 Share", card.onShare)
 	shareButton.Importance = widget.MediumImportance
@@ -253,7 +243,7 @@ func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 		stackLabel:     stackLabel,
 		statusLabel:    statusLabel,
 		timeLabel:      timeLabel,
-		runButton:      runButton,
+		runButton:      openButton,
 		shareButton:    shareButton,
 		deleteButton:   deleteButton,
 	}
@@ -365,14 +355,9 @@ func (r *heroCardRenderer) Refresh() {
 		r.statusLabel.SetText("⏸️ Stopped")
 	}
 	
-	// Update run button
-	if cherry.IsRunning {
-		r.runButton.SetText("⏹ Stop Cherry")
-		r.runButton.Importance = widget.DangerImportance
-	} else {
-		r.runButton.SetText("▶ Run Cherry")
-		r.runButton.Importance = widget.HighImportance
-	}
+	// Update open button
+	r.runButton.SetText("📂 Open Cherry")
+	r.runButton.Importance = widget.HighImportance
 	
 	// Update background with gradient effect
 	r.background.FillColor = color.RGBA{R: 40, G: 40, B: 40, A: 255}
@@ -433,16 +418,11 @@ func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 		statusLabel.SetText("🟢 Running")
 	}
 	
-	// Run button with cherry styling
-	runButton := widget.NewButton("▶ Run Cherry", func() {
+	// Open button with cherry styling
+	openButton := widget.NewButton("📂 Open Cherry", func() {
 		// This would be connected to the cherry manager
 	})
-	if cherry.IsRunning {
-		runButton.SetText("⏹ Stop Cherry")
-		runButton.Importance = widget.DangerImportance
-	} else {
-		runButton.Importance = widget.HighImportance
-	}
+	openButton.Importance = widget.HighImportance
 	
 	return &heroCardRenderer{
 		hero:           hero,
@@ -452,6 +432,6 @@ func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 		descLabel:      descLabel,
 		stackLabel:     stackLabel,
 		statusLabel:    statusLabel,
-		runButton:      runButton,
+		runButton:      openButton,
 	}
 }

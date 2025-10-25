@@ -137,7 +137,7 @@ func main() {
 	statsBinding := binding.NewString()
 	updateStats := func() {
 		total, running, stopped := cherryManager.GetStats()
-		statsBinding.Set(fmt.Sprintf("📊 Total: %d | 🟢 Running: %d | ⏸️ Stopped: %d", 
+		statsBinding.Set(fmt.Sprintf("📊 Total: %d | 📂 Open: %d | ⏸️ Closed: %d", 
 			total, running, stopped))
 	}
 	updateStats()
@@ -183,7 +183,7 @@ func main() {
 	filterAll := widget.NewButton("All", func() {
 		refreshCherryList()
 	})
-	filterRunning := widget.NewButton("Running", func() {
+	filterOpen := widget.NewButton("Open", func() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
 			if cherry.IsRunning {
@@ -192,7 +192,7 @@ func main() {
 			}
 		}
 	})
-	filterStopped := widget.NewButton("Stopped", func() {
+	filterClosed := widget.NewButton("Closed", func() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
 			if !cherry.IsRunning {
@@ -205,8 +205,8 @@ func main() {
 	filterContainer := container.NewHBox(
 		widget.NewLabel("Filters:"),
 		filterAll,
-		filterRunning,
-		filterStopped,
+		filterOpen,
+		filterClosed,
 	)
 
 	// Input container
@@ -258,28 +258,18 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 	// Create beautiful cherry card
 	cherryCard := NewCherryCard(cherry, 
 		func() {
-			// Run/Stop functionality
-			if cherry.IsRunning {
-				// Stop cherry
-				for i, c := range cherryManager.cherries {
-					if c.ID == cherry.ID {
-						cherryManager.cherries[i].IsRunning = false
-						break
-					}
-				}
-			} else {
-				// Run cherry
-				for i, c := range cherryManager.cherries {
-					if c.ID == cherry.ID {
-						cherryManager.cherries[i].IsRunning = true
-						now := time.Now()
-						cherryManager.cherries[i].LastRun = &now
-						break
-					}
+			// Open cherry functionality
+			for i, c := range cherryManager.cherries {
+				if c.ID == cherry.ID {
+					cherryManager.cherries[i].IsRunning = true
+					now := time.Now()
+					cherryManager.cherries[i].LastRun = &now
+					break
 				}
 			}
 			refreshList()
 			updateStats()
+			dialog.ShowInformation("Cherry Opened", fmt.Sprintf("Opening '%s'...", cherry.Name), parent)
 		},
 		func() {
 			// Delete functionality
