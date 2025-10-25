@@ -507,17 +507,10 @@ function exportBowl() {
 
 // Download FileCherry desktop app
 function downloadFileCherry() {
-    // In production, this would trigger actual download
-    showNotification('Downloading FileCherry... (Demo mode)');
+    showNotification('Downloading latest FileCherry...');
     
-    // Simulate download
-    setTimeout(() => {
-        showNotification('FileCherry ready to use! 🎉');
-    }, 2000);
-    
-    /* PRODUCTION CODE:
-    window.location.href = '/download/filecherry-desktop';
-    */
+    // Use the dynamic download endpoint
+    window.location.href = '/api/download-desktop';
 }
 
 // Navigation functions

@@ -195,6 +195,34 @@ app.get('/api/download/:cherryId', async (req, res) => {
     }
 });
 
+/**
+ * Download latest desktop app (dynamic)
+ */
+app.get('/api/download-desktop', async (req, res) => {
+    try {
+        const latestApp = await getLatestDesktopApp();
+        
+        if (!latestApp) {
+            res.status(404).json({ error: 'No desktop app found' });
+            return;
+        }
+        
+        // Set appropriate headers for file download
+        res.setHeader('Content-Disposition', `attachment; filename="${latestApp.name}"`);
+        res.setHeader('Content-Type', 'application/octet-stream');
+        
+        // Stream the file
+        const fileStream = await fs.createReadStream(latestApp.path);
+        fileStream.pipe(res);
+        
+        console.log(`Serving latest desktop app: ${latestApp.name}`);
+        
+    } catch (error) {
+        console.error('Download error:', error);
+        res.status(500).json({ error: 'Failed to serve download' });
+    }
+});
+
 // ============================================================================
 // Helper Functions
 // ============================================================================
@@ -382,6 +410,67 @@ async function findBinary(projectDir, stack) {
     }
     
     throw new Error('Built binary not found');
+}
+
+/**
+ * Get the latest desktop app file
+ */
+async function getLatestDesktopApp() {
+    const outputsDir = path.join(__dirname, '..', 'outputs');
+    const goDesktopDir = path.join(__dirname, '..', 'projects', 'finished', 'go-desktop-demo');
+    
+    try {
+        // Check for latest build in outputs directory first
+        const outputsFiles = (await fs.readdir(outputsDir)).filter(file => 
+            file.includes('task-cherry-desktop') || file.includes('filecherry-desktop')
+        );
+        
+        if (outputsFiles.length > 0) {
+            // Sort by modification time to get the latest
+            const fileStats = await Promise.all(
+                outputsFiles.map(async (file) => {
+                    const filePath = path.join(outputsDir, file);
+                    const stats = await fs.stat(filePath);
+                    return {
+                        name: file,
+                        path: filePath,
+                        mtime: stats.mtime
+                    };
+                })
+            );
+            
+            const latestFile = fileStats.sort((a, b) => b.mtime - a.mtime)[0];
+            return latestFile;
+        }
+        
+        // Fallback to go-desktop-demo directory
+        const desktopFiles = (await fs.readdir(goDesktopDir)).filter(file => 
+            file.includes('task-cherry-desktop') || file.includes('filecherry-desktop')
+        );
+        
+        if (desktopFiles.length > 0) {
+            const fileStats = await Promise.all(
+                desktopFiles.map(async (file) => {
+                    const filePath = path.join(goDesktopDir, file);
+                    const stats = await fs.stat(filePath);
+                    return {
+                        name: file,
+                        path: filePath,
+                        mtime: stats.mtime
+                    };
+                })
+            );
+            
+            const latestFile = fileStats.sort((a, b) => b.mtime - a.mtime)[0];
+            return latestFile;
+        }
+        
+        return null;
+        
+    } catch (error) {
+        console.error('Error finding latest desktop app:', error);
+        return null;
+    }
 }
 
 // Utility functions
