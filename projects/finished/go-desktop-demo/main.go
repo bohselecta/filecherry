@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"time"
+	"net/http"
+	"bytes"
+	"encoding/json"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -176,6 +179,11 @@ func main() {
 		showCompileDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
+	// AI Builder button
+	aiBuilderButton := widget.NewButton("🤖 AI Builder", func() {
+		showAIBuilderDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	})
+
 	// Settings button
 	settingsButton := widget.NewButton("⚙️ Settings", func() {
 		showSettingsDialog(myWindow)
@@ -221,7 +229,7 @@ func main() {
 	// Input container
 	inputContainer := container.NewVBox(
 		widget.NewLabel("Create Applications:"),
-		container.NewHBox(createAppButton, browseTemplatesButton, compileAppsButton, settingsButton),
+		container.NewHBox(createAppButton, browseTemplatesButton, compileAppsButton, aiBuilderButton, settingsButton),
 	)
 
 	// Create hero section with main cherry
@@ -544,4 +552,133 @@ func showCompileDialog(parent fyne.Window, cherryManager *CherryManager, refresh
 	)
 
 	dialog.ShowCustom("Compile Apps", "Close", content, parent)
+}
+
+func showAIBuilderDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create AI Builder dialog
+	aiLabel := widget.NewLabel("🤖 AI Cherry Builder")
+	aiLabel.TextStyle.Bold = true
+
+	descEntry := widget.NewMultiLineEntry()
+	descEntry.SetPlaceHolder("Describe what you want your app to do...\n\nExample: 'A simple todo app with categories and due dates'")
+
+	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
+	categorySelect.SetSelected("productivity")
+
+	stackSelect := widget.NewSelect([]string{"go-fyne", "tauri-react", "bun-hono", "rust-axum", "go-gin", "static"}, nil)
+	stackSelect.SetSelected("go-fyne")
+
+	// Options
+	includeDatabase := widget.NewCheck("Include Fireproof Database", nil)
+	includeDatabase.SetChecked(true)
+	
+	includeSync := widget.NewCheck("Include Sync Features", nil)
+	includeSync.SetChecked(false)
+	
+	includeAuth := widget.NewCheck("Include Authentication", nil)
+	includeAuth.SetChecked(false)
+
+	// Status label
+	statusLabel := widget.NewLabel("Ready to generate")
+	statusLabel.Alignment = fyne.TextAlignCenter
+
+	content := container.NewVBox(
+		aiLabel,
+		widget.NewSeparator(),
+		widget.NewLabel("Describe what you want your app to do:"),
+		descEntry,
+		widget.NewSeparator(),
+		container.NewHBox(
+			widget.NewLabel("Category:"),
+			categorySelect,
+		),
+		container.NewHBox(
+			widget.NewLabel("Stack:"),
+			stackSelect,
+		),
+		widget.NewSeparator(),
+		widget.NewLabel("Features:"),
+		includeDatabase,
+		includeSync,
+		includeAuth,
+		widget.NewSeparator(),
+		statusLabel,
+	)
+
+	dialog.ShowCustomConfirm("AI Builder", "Generate", "Cancel", content, func(confirmed bool) {
+		if confirmed {
+			description := descEntry.Text
+			if description == "" {
+				dialog.ShowInformation("Error", "Please describe what you want your app to do", parent)
+				return
+			}
+
+			// Update status
+			statusLabel.SetText("Generating with AI...")
+			statusLabel.Refresh()
+
+			// Call AI API
+			go func() {
+				cherrySpec, err := callAIGenerateCherry(description, categorySelect.Selected, stackSelect.Selected, includeDatabase.Checked, includeSync.Checked, includeAuth.Checked)
+				
+				if err != nil {
+					statusLabel.SetText("Error: " + err.Error())
+					dialog.ShowError(err, parent)
+					return
+				}
+
+				// Add generated cherry to manager
+				cherryManager.AddCherry(cherrySpec.Name, cherrySpec.Description, categorySelect.Selected, stackSelect.Selected)
+				refreshList()
+				updateStats()
+				
+				statusLabel.SetText("Generated successfully!")
+				dialog.ShowInformation("AI Generated", fmt.Sprintf("App '%s' has been generated using AI!", cherrySpec.Name), parent)
+			}()
+		}
+	}, parent)
+}
+
+// CherrySpec represents the AI-generated cherry specification
+type CherrySpec struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+	Features    []string `json:"features"`
+	Stack       string `json:"stack"`
+}
+
+func callAIGenerateCherry(description, category, stack string, includeDatabase, includeSync, includeAuth bool) (*CherrySpec, error) {
+	// Prepare request
+	requestData := map[string]interface{}{
+		"description": description,
+		"category": category,
+		"stack": stack,
+		"includeDatabase": includeDatabase,
+		"includeSync": includeSync,
+		"includeAuth": includeAuth,
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal request: %v", err)
+	}
+
+	// Call the backend API
+	resp, err := http.Post("http://localhost:3001/api/generate-cherry", "application/json", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, fmt.Errorf("failed to call AI API: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("AI API returned status %d", resp.StatusCode)
+	}
+
+	// Parse response
+	var cherrySpec CherrySpec
+	if err := json.NewDecoder(resp.Body).Decode(&cherrySpec); err != nil {
+		return nil, fmt.Errorf("failed to parse AI response: %v", err)
+	}
+
+	return &cherrySpec, nil
 }
