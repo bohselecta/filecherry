@@ -885,8 +885,8 @@ func createProjectWithCLI(spec *CherrySpec) error {
 	// Get the TinyApp Factory CLI path
 	cliPath := filepath.Join("/Users/home/dev/tinyapp-factory", "cli.js")
 	
-	// Create project using TinyApp Factory CLI
-	cmd := exec.Command("node", cliPath, "create", spec.Name, "--stack", spec.Stack)
+	// Create project using TinyApp Factory CLI (non-interactive mode)
+	cmd := exec.Command("node", cliPath, "new", "--name", spec.Name, "--stack", spec.Stack)
 	cmd.Dir = "/Users/home/dev/tinyapp-factory"
 	
 	output, err := cmd.CombinedOutput()
@@ -917,8 +917,8 @@ func buildProjectWithCLI(spec *CherrySpec) error {
 	// Get the TinyApp Factory CLI path
 	cliPath := filepath.Join("/Users/home/dev/tinyapp-factory", "cli.js")
 	
-	// Build project using TinyApp Factory CLI
-	cmd := exec.Command("node", cliPath, "build", spec.Name)
+	// Build project using TinyApp Factory CLI (correct command format)
+	cmd := exec.Command("node", cliPath, "build", "--project", spec.Name)
 	cmd.Dir = "/Users/home/dev/tinyapp-factory"
 	
 	output, err := cmd.CombinedOutput()
