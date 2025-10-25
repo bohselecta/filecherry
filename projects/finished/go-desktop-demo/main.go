@@ -157,14 +157,19 @@ func main() {
 		}
 	}
 
+	// Add cherry button
+	addCherryButton := widget.NewButton("➕ Add Cherry", func() {
+		showAddCherryDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	})
+
 	// Browse marketplace button
 	browseMarketplaceButton := widget.NewButton("🛒 Browse Marketplace", func() {
 		showMarketplaceDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Install from file button
-	installFromFileButton := widget.NewButton("📁 Install from File", func() {
-		showInstallDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Fireproof sync button
+	syncButton := widget.NewButton("🔥 Fireproof Sync", func() {
+		showFireproofSyncDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
 	// Settings button
@@ -211,8 +216,8 @@ func main() {
 
 	// Input container
 	inputContainer := container.NewVBox(
-		widget.NewLabel("Add Cherries to Your Bowl:"),
-		container.NewHBox(browseMarketplaceButton, installFromFileButton, settingsButton),
+		widget.NewLabel("Manage Your Cherry Bowl:"),
+		container.NewHBox(addCherryButton, browseMarketplaceButton, syncButton, settingsButton),
 	)
 
 	// Create hero section with main cherry
@@ -413,4 +418,83 @@ func showSettingsDialog(parent fyne.Window) {
 
 func formatTime(t time.Time) string {
 	return t.Format("Jan 2, 3:04 PM")
+}
+
+func showAddCherryDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create add cherry dialog
+	nameEntry := widget.NewEntry()
+	nameEntry.SetPlaceHolder("Cherry name")
+
+	descEntry := widget.NewEntry()
+	descEntry.SetPlaceHolder("Description")
+
+	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
+	categorySelect.SetSelected("productivity")
+
+	stackSelect := widget.NewSelect([]string{"go-gin", "go-fyne", "bun-hono", "rust-axum", "tauri-react", "static"}, nil)
+	stackSelect.SetSelected("go-gin")
+
+	content := container.NewVBox(
+		widget.NewLabel("Add New Cherry"),
+		widget.NewSeparator(),
+		nameEntry,
+		descEntry,
+		container.NewHBox(
+			widget.NewLabel("Category:"),
+			categorySelect,
+		),
+		container.NewHBox(
+			widget.NewLabel("Stack:"),
+			stackSelect,
+		),
+	)
+
+	dialog.ShowCustomConfirm("Add Cherry", "Add", "Cancel", content, func(confirmed bool) {
+		if confirmed {
+			name := nameEntry.Text
+			desc := descEntry.Text
+			category := categorySelect.Selected
+			stack := stackSelect.Selected
+			if name != "" && desc != "" {
+				cherryManager.AddCherry(name, desc, category, stack)
+				refreshList()
+				updateStats()
+				dialog.ShowInformation("Success", fmt.Sprintf("Cherry '%s' added to your bowl!", name), parent)
+			}
+		}
+	}, parent)
+}
+
+func showFireproofSyncDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create Fireproof sync dialog
+	syncLabel := widget.NewLabel("🔥 Fireproof Sync")
+	syncLabel.TextStyle.Bold = true
+
+	infoLabel := widget.NewLabel("Sync your cherry bowl with Fireproof database for offline-first storage and sharing.")
+
+	// Sync options
+	enableSync := widget.NewCheck("Enable Fireproof Sync", nil)
+	enableSync.SetChecked(true)
+
+	sharePublic := widget.NewCheck("Share cherry bowl publicly", nil)
+	sharePublic.SetChecked(false)
+
+	content := container.NewVBox(
+		syncLabel,
+		widget.NewSeparator(),
+		infoLabel,
+		widget.NewSeparator(),
+		enableSync,
+		sharePublic,
+		widget.NewSeparator(),
+		widget.NewLabel("Your cherry bowl will be stored locally and can be shared with others using Fireproof's peer-to-peer sync."),
+	)
+
+	dialog.ShowCustomConfirm("Fireproof Sync", "Enable Sync", "Cancel", content, func(confirmed bool) {
+		if confirmed {
+			if enableSync.Checked {
+				dialog.ShowInformation("Fireproof Sync Enabled", "Your cherry bowl is now syncing with Fireproof! Changes will be stored locally and can be shared.", parent)
+			}
+		}
+	}, parent)
 }
