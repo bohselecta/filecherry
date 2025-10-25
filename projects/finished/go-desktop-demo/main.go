@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"bytes"
 	"encoding/json"
+	"os"
+	"path/filepath"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -382,12 +384,12 @@ func showSettingsDialog(parent fyne.Window) {
 
 	// Auto-update setting
 	autoUpdateCheck := widget.NewCheck("Enable auto-updates", nil)
-	autoUpdateCheck.SetChecked(true)
+	autoUpdateCheck.SetChecked(appSettings.AutoUpdate)
 
 	// Storage path setting
 	storagePathLabel := widget.NewLabel("Storage Path:")
 	storagePathEntry := widget.NewEntry()
-	storagePathEntry.SetText("~/FileCherry")
+	storagePathEntry.SetText(appSettings.StoragePath)
 	storagePathButton := widget.NewButton("Browse", func() {
 		// This would open a folder picker dialog
 		dialog.ShowInformation("Browse Folder", "This would open a folder picker dialog", parent)
@@ -397,7 +399,24 @@ func showSettingsDialog(parent fyne.Window) {
 	aiKeyLabel := widget.NewLabel("AI API Key (for AI Builder):")
 	aiKeyEntry := widget.NewEntry()
 	aiKeyEntry.SetPlaceHolder("Enter your DeepSeek or OpenAI API key")
-	aiKeyEntry.SetText("")
+	aiKeyEntry.SetText(appSettings.AIAPIKey)
+
+	// Save button
+	saveButton := widget.NewButton("💾 Save Settings", func() {
+		// Update settings from UI
+		appSettings.AutoUpdate = autoUpdateCheck.Checked
+		appSettings.StoragePath = storagePathEntry.Text
+		appSettings.AIAPIKey = aiKeyEntry.Text
+		
+		// Save to file
+		err := saveSettings()
+		if err != nil {
+			dialog.ShowError(fmt.Errorf("Failed to save settings: %v", err), parent)
+			return
+		}
+		
+		dialog.ShowInformation("Settings Saved", "Your settings have been saved successfully!", parent)
+	})
 
 	// About section
 	aboutLabel := widget.NewLabel("About FileCherry")
@@ -406,7 +425,7 @@ func showSettingsDialog(parent fyne.Window) {
 	buildLabel := widget.NewLabel("Build: Desktop Manager")
 	authorLabel := widget.NewLabel("Built with TinyApp Factory")
 
-	// Settings content
+	// Settings content with proper width
 	content := container.NewVBox(
 		generalLabel,
 		widget.NewSeparator(),
@@ -418,6 +437,8 @@ func showSettingsDialog(parent fyne.Window) {
 		aiKeyLabel,
 		aiKeyEntry,
 		widget.NewSeparator(),
+		saveButton,
+		widget.NewSeparator(),
 		aboutLabel,
 		widget.NewSeparator(),
 		versionLabel,
@@ -425,7 +446,10 @@ func showSettingsDialog(parent fyne.Window) {
 		authorLabel,
 	)
 
-	dialog.ShowCustom("Settings", "Close", content, parent)
+	// Create custom dialog with proper size
+	settingsDialog := dialog.NewCustom("Settings", "Close", content, parent)
+	settingsDialog.Resize(fyne.NewSize(500, 400)) // Mobile-friendly width
+	settingsDialog.Show()
 }
 
 func formatTime(t time.Time) string {
@@ -645,6 +669,68 @@ type CherrySpec struct {
 	Description string `json:"description"`
 	Features    []string `json:"features"`
 	Stack       string `json:"stack"`
+}
+
+// Settings represents application settings
+type Settings struct {
+	AutoUpdate    bool   `json:"autoUpdate"`
+	StoragePath   string `json:"storagePath"`
+	AIAPIKey      string `json:"aiApiKey"`
+}
+
+// Global settings
+var appSettings Settings
+
+func init() {
+	// Initialize default settings
+	appSettings = Settings{
+		AutoUpdate:  true,
+		StoragePath: "~/FileCherry",
+		AIAPIKey:    "",
+	}
+	loadSettings()
+}
+
+func getSettingsPath() string {
+	homeDir, _ := os.UserHomeDir()
+	return filepath.Join(homeDir, ".filecherry", "settings.json")
+}
+
+func loadSettings() {
+	settingsPath := getSettingsPath()
+	
+	// Create directory if it doesn't exist
+	os.MkdirAll(filepath.Dir(settingsPath), 0755)
+	
+	data, err := os.ReadFile(settingsPath)
+	if err != nil {
+		// File doesn't exist, use defaults
+		return
+	}
+	
+	err = json.Unmarshal(data, &appSettings)
+	if err != nil {
+		// Invalid JSON, use defaults
+		appSettings = Settings{
+			AutoUpdate:  true,
+			StoragePath: "~/FileCherry",
+			AIAPIKey:    "",
+		}
+	}
+}
+
+func saveSettings() error {
+	settingsPath := getSettingsPath()
+	
+	// Create directory if it doesn't exist
+	os.MkdirAll(filepath.Dir(settingsPath), 0755)
+	
+	data, err := json.MarshalIndent(appSettings, "", "  ")
+	if err != nil {
+		return err
+	}
+	
+	return os.WriteFile(settingsPath, data, 0644)
 }
 
 func callAIGenerateCherry(description, category, stack string, includeDatabase, includeSync, includeAuth bool) (*CherrySpec, error) {
