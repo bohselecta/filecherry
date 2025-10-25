@@ -54,12 +54,12 @@ func NewCherryManager() *CherryManager {
 			},
 			{
 				ID:          "2",
-				Name:        "Chat Web App",
-				Description: "Real-time chat application with Bun + Hono",
+				Name:        "Portfolio Website",
+				Description: "A static HTML portfolio website",
 				Category:    "web",
-				Stack:       "bun-hono",
-				Size:        "8 MB",
-				Path:        "/projects/chat-web",
+				Stack:       "static-html",
+				Size:        "2 MB",
+				Path:        "/projects/portfolio-web",
 				CreatedAt:   time.Now().Add(-12 * time.Hour),
 				LastCompiled: nil,
 				IsCompiled:   false,
@@ -109,12 +109,8 @@ func (cm *CherryManager) GetStats() (total, compiled, pending int) {
 
 func estimateSize(stack string) string {
 	sizes := map[string]string{
-		"go-gin":     "8-18 MB",
-		"go-fyne":    "20-30 MB",
-		"bun-hono":   "50-100 MB",
-		"rust-axum":  "5-15 MB",
-		"tauri-react": "6-14 MB",
-		"static":     "<2 MB",
+		"static-html": "1-3 MB",
+		"go-fyne":     "15-25 MB",
 	}
 	if size, exists := sizes[stack]; exists {
 		return size
@@ -567,8 +563,8 @@ func showCreateAppDialog(parent fyne.Window, cherryManager *CherryManager, refre
 	appTypeSelect := widget.NewSelect([]string{"desktop", "web"}, nil)
 	appTypeSelect.SetSelected("desktop")
 
-	stackSelect := widget.NewSelect([]string{"go-fyne", "tauri-react", "bun-hono", "rust-axum", "go-gin", "static"}, nil)
-	stackSelect.SetSelected("go-fyne")
+	stackSelect := widget.NewSelect([]string{"static-html", "go-fyne"}, nil)
+	stackSelect.SetSelected("static-html")
 
 	content := container.NewVBox(
 		widget.NewLabel("🚀 Create New Application"),
@@ -615,11 +611,10 @@ func showTemplatesDialog(parent fyne.Window, cherryManager *CherryManager, refre
 		stack       string
 		type_       string
 	}{
-		{"Todo App", "A simple todo list application", "go-fyne", "desktop"},
-		{"Chat App", "Real-time chat application", "bun-hono", "web"},
-		{"File Manager", "Desktop file management tool", "tauri-react", "desktop"},
-		{"API Server", "RESTful API server", "rust-axum", "web"},
-		{"Static Site", "Simple static website", "static", "web"},
+		{"Simple Website", "A clean static HTML website", "static-html", "web"},
+		{"Desktop Calculator", "A desktop calculator app", "go-fyne", "desktop"},
+		{"Portfolio Site", "A professional portfolio website", "static-html", "web"},
+		{"Text Editor", "A simple desktop text editor", "go-fyne", "desktop"},
 	}
 
 	var templateButtons []fyne.CanvasObject
@@ -764,8 +759,8 @@ func showAIBuilderDialog(parent fyne.Window, cherryManager *CherryManager, refre
 	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
 	categorySelect.SetSelected("productivity")
 
-	stackSelect := widget.NewSelect([]string{"go-fyne", "tauri-react", "bun-hono", "rust-axum", "go-gin", "static"}, nil)
-	stackSelect.SetSelected("go-fyne")
+	stackSelect := widget.NewSelect([]string{"static-html", "go-fyne"}, nil)
+	stackSelect.SetSelected("static-html")
 
 	// Options
 	includeDatabase := widget.NewCheck("Include Fireproof Database", nil)
