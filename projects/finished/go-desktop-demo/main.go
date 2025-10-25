@@ -161,9 +161,9 @@ func main() {
 		}
 	}
 
-	// Generate App button
-	generateAppButton := widget.NewButton("🚀 Generate App", func() {
-		showGenerateAppDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Create New App button
+	createAppButton := widget.NewButton("🚀 Create New App", func() {
+		showCreateAppDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
 	// Browse Templates button
@@ -171,9 +171,9 @@ func main() {
 		showTemplatesDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Build Projects button
-	buildProjectsButton := widget.NewButton("🔨 Build Projects", func() {
-		showBuildDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Compile Apps button
+	compileAppsButton := widget.NewButton("⚡ Compile Apps", func() {
+		showCompileDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
 	// Settings button
@@ -220,8 +220,8 @@ func main() {
 
 	// Input container
 	inputContainer := container.NewVBox(
-		widget.NewLabel("Generate Applications:"),
-		container.NewHBox(generateAppButton, browseTemplatesButton, buildProjectsButton, settingsButton),
+		widget.NewLabel("Create Applications:"),
+		container.NewHBox(createAppButton, browseTemplatesButton, compileAppsButton, settingsButton),
 	)
 
 	// Create hero section with main cherry
@@ -424,8 +424,8 @@ func formatTime(t time.Time) string {
 	return t.Format("Jan 2, 3:04 PM")
 }
 
-func showGenerateAppDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
-	// Create app generation dialog
+func showCreateAppDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create new app dialog
 	nameEntry := widget.NewEntry()
 	nameEntry.SetPlaceHolder("App name")
 
@@ -439,7 +439,7 @@ func showGenerateAppDialog(parent fyne.Window, cherryManager *CherryManager, ref
 	stackSelect.SetSelected("go-fyne")
 
 	content := container.NewVBox(
-		widget.NewLabel("🚀 Generate New Application"),
+		widget.NewLabel("🚀 Create New Application"),
 		widget.NewSeparator(),
 		nameEntry,
 		descEntry,
@@ -452,21 +452,21 @@ func showGenerateAppDialog(parent fyne.Window, cherryManager *CherryManager, ref
 			stackSelect,
 		),
 		widget.NewSeparator(),
-		widget.NewLabel("This will create a new project using TinyApp Factory CLI"),
+		widget.NewLabel("This will scaffold a new project using TinyApp Factory CLI"),
 	)
 
-	dialog.ShowCustomConfirm("Generate App", "Generate", "Cancel", content, func(confirmed bool) {
+	dialog.ShowCustomConfirm("Create App", "Create", "Cancel", content, func(confirmed bool) {
 		if confirmed {
 			name := nameEntry.Text
 			desc := descEntry.Text
 			appType := appTypeSelect.Selected
 			stack := stackSelect.Selected
 			if name != "" && desc != "" {
-				// Add to cherry manager as a generated project
+				// Add to cherry manager as a created project
 				cherryManager.AddCherry(name, desc, appType, stack)
 				refreshList()
 				updateStats()
-				dialog.ShowInformation("App Generated", fmt.Sprintf("App '%s' has been generated using %s stack!", name, stack), parent)
+				dialog.ShowInformation("App Created", fmt.Sprintf("App '%s' has been created using %s stack!", name, stack), parent)
 			}
 		}
 	}, parent)
@@ -513,35 +513,35 @@ func showTemplatesDialog(parent fyne.Window, cherryManager *CherryManager, refre
 	dialog.ShowCustom("Browse Templates", "Close", content, parent)
 }
 
-func showBuildDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
-	// Create build dialog
-	buildLabel := widget.NewLabel("🔨 Build Projects")
-	buildLabel.TextStyle.Bold = true
+func showCompileDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create compile dialog
+	compileLabel := widget.NewLabel("⚡ Compile Applications")
+	compileLabel.TextStyle.Bold = true
 
 	cherries := cherryManager.GetCherries()
 	if len(cherries) == 0 {
-		dialog.ShowInformation("No Projects", "You don't have any projects to build yet. Generate an app first!", parent)
+		dialog.ShowInformation("No Projects", "You don't have any projects to compile yet. Create an app first!", parent)
 		return
 	}
 
-	var buildButtons []fyne.CanvasObject
+	var compileButtons []fyne.CanvasObject
 	for _, cherry := range cherries {
 		cherry := cherry // capture loop variable
-		btn := widget.NewButton(fmt.Sprintf("Build %s (%s)", cherry.Name, cherry.Stack), func() {
-			dialog.ShowInformation("Building", fmt.Sprintf("Building %s using TinyApp Factory CLI...", cherry.Name), parent)
+		btn := widget.NewButton(fmt.Sprintf("Compile %s (%s)", cherry.Name, cherry.Stack), func() {
+			dialog.ShowInformation("Compiling", fmt.Sprintf("Compiling %s into executable...", cherry.Name), parent)
 		})
-		buildButtons = append(buildButtons, btn)
+		compileButtons = append(compileButtons, btn)
 	}
 
 	content := container.NewVBox(
-		buildLabel,
+		compileLabel,
 		widget.NewSeparator(),
-		widget.NewLabel("Build your generated projects:"),
+		widget.NewLabel("Compile your created projects into executables:"),
 		widget.NewSeparator(),
-		container.NewVBox(buildButtons...),
+		container.NewVBox(compileButtons...),
 		widget.NewSeparator(),
-		widget.NewLabel("This will compile and package your applications for distribution."),
+		widget.NewLabel("This will compile your source code into runnable applications."),
 	)
 
-	dialog.ShowCustom("Build Projects", "Close", content, parent)
+	dialog.ShowCustom("Compile Apps", "Close", content, parent)
 }
