@@ -135,7 +135,7 @@ func main() {
 	// Initialize cherry manager
 	cherryManager := NewCherryManager()
 
-	// Create UI elements
+	// Create UI elements with better hierarchy
 	title := widget.NewLabel("🍒 FileCherry Desktop")
 	title.TextStyle.Bold = true
 	title.Alignment = fyne.TextAlignCenter
@@ -143,16 +143,17 @@ func main() {
 	subtitle := widget.NewLabel("Code Generator for Desktop & Web Apps")
 	subtitle.Alignment = fyne.TextAlignCenter
 
-	// Stats display
+	// Stats display (more compact)
 	statsBinding := binding.NewString()
 	updateStats := func() {
 		total, running, stopped := cherryManager.GetStats()
-		statsBinding.Set(fmt.Sprintf("📊 Total: %d | 📂 Open: %d | ⏸️ Closed: %d", 
+		statsBinding.Set(fmt.Sprintf("%d projects • %d running • %d stopped", 
 			total, running, stopped))
 	}
 	updateStats()
 
 	statsLabel := widget.NewLabelWithData(statsBinding)
+	statsLabel.Alignment = fyne.TextAlignCenter
 
 	// Cherry list container
 	cherryList := container.NewVBox()
@@ -167,28 +168,23 @@ func main() {
 		}
 	}
 
-	// Create New App button
+	// Primary Actions (Most Important)
 	createAppButton := widget.NewButton("🚀 Create New App", func() {
 		showCreateAppDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Browse Templates button
-	browseTemplatesButton := widget.NewButton("📋 Browse Templates", func() {
-		showTemplatesDialog(myWindow, cherryManager, refreshCherryList, updateStats)
-	})
-
-	// Compile Apps button
-	compileAppsButton := widget.NewButton("⚡ Compile Apps", func() {
-		showCompileDialog(myWindow, cherryManager, refreshCherryList, updateStats)
-	})
-
-	// AI Builder button
 	aiBuilderButton := widget.NewButton("🤖 AI Builder", func() {
 		showAIBuilderDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Settings button
-	settingsButton := widget.NewButton("⚙️ Settings", func() {
+	// Secondary Actions (Less Important - moved to menu)
+	// These will be accessible via a "More Actions" menu
+	moreActionsButton := widget.NewButton("⋯ More Actions", func() {
+		showMoreActionsMenu(myWindow, cherryManager, refreshCherryList, updateStats)
+	})
+
+	// Settings button (moved to menu bar area)
+	settingsButton := widget.NewButton("⚙️", func() {
 		showSettingsDialog(myWindow)
 	})
 
@@ -229,13 +225,28 @@ func main() {
 		filterClosed,
 	)
 
-	// Input container
-	inputContainer := container.NewVBox(
-		widget.NewLabel("Create Applications:"),
-		container.NewHBox(createAppButton, browseTemplatesButton, compileAppsButton, aiBuilderButton, settingsButton),
+	// Primary action container (prominent)
+	primaryActionsContainer := container.NewHBox(
+		createAppButton,
+		aiBuilderButton,
 	)
 
-	// Create hero section with main cherry
+	// Secondary actions container (less prominent)
+	secondaryActionsContainer := container.NewHBox(
+		moreActionsButton,
+		widget.NewSeparator(),
+		settingsButton,
+	)
+
+	// Main input container with better hierarchy
+	inputContainer := container.NewVBox(
+		widget.NewLabel("Quick Start:"),
+		primaryActionsContainer,
+		widget.NewSeparator(),
+		secondaryActionsContainer,
+	)
+
+	// Create hero section with main cherry (removed from main layout for better UX)
 	var heroCherry Cherry
 	if len(cherryManager.GetCherries()) > 0 {
 		heroCherry = cherryManager.GetCherries()[0]
@@ -251,22 +262,32 @@ func main() {
 		}
 	}
 	
-	heroCard := NewHeroCard(heroCherry)
-	heroContainer := container.NewPadded(heroCard)
+	// Hero card (not used in main layout but kept for future use)
+	_ = NewHeroCard(heroCherry)
 
-	// Main content with hero section
+	// Main content with better spacing and hierarchy
 	content := container.NewVBox(
-		title,
-		subtitle,
+		// Header section
+		container.NewVBox(
+			title,
+			subtitle,
+			widget.NewSeparator(),
+			statsLabel,
+		),
+		
 		widget.NewSeparator(),
-		statsLabel,
-		widget.NewSeparator(),
-		heroContainer,
-		widget.NewSeparator(),
+		
+		// Quick start section
 		inputContainer,
+		
 		widget.NewSeparator(),
-		filterContainer,
-		scrollContainer,
+		
+		// Projects section
+		container.NewVBox(
+			widget.NewLabel("Your Projects:"),
+			filterContainer,
+			scrollContainer,
+		),
 	)
 
 	// Set content and show window
@@ -292,10 +313,16 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 			dialog.ShowInformation("Cherry Opened", fmt.Sprintf("Opening '%s'...", cherry.Name), parent)
 		},
 		func() {
-			// Delete functionality
-			cherryManager.DeleteCherry(cherry.ID)
-			refreshList()
-			updateStats()
+			// Delete functionality with confirmation
+			dialog.ShowConfirm("Delete Project", 
+				fmt.Sprintf("Are you sure you want to delete '%s'? This action cannot be undone.", cherry.Name),
+				func(confirmed bool) {
+					if confirmed {
+						cherryManager.DeleteCherry(cherry.ID)
+						refreshList()
+						updateStats()
+					}
+				}, parent)
 		},
 		func() {
 			// Share functionality
@@ -304,9 +331,70 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 		refreshList,
 		updateStats,
 	)
+
+	// Add contextual actions for this specific project
+	contextualActions := container.NewHBox(
+		widget.NewButton("⚡ Compile", func() {
+			showCompileDialog(parent, cherryManager, refreshList, updateStats)
+		}),
+		widget.NewButton("📁 Open Folder", func() {
+			dialog.ShowInformation("Open Folder", fmt.Sprintf("Opening folder for %s...", cherry.Name), parent)
+		}),
+		widget.NewButton("ℹ️ Details", func() {
+			showProjectDetailsDialog(parent, cherry)
+		}),
+	)
 	
-	// Wrap in container with padding
-	return container.NewPadded(cherryCard)
+	// Wrap in container with contextual actions
+	return container.NewVBox(
+		container.NewPadded(cherryCard),
+		contextualActions,
+	)
+}
+
+func showProjectDetailsDialog(parent fyne.Window, cherry Cherry) {
+	// Create project details dialog
+	detailsLabel := widget.NewLabel("Project Details")
+	detailsLabel.TextStyle.Bold = true
+
+	// Project information
+	nameLabel := widget.NewLabel(fmt.Sprintf("Name: %s", cherry.Name))
+	descLabel := widget.NewLabel(fmt.Sprintf("Description: %s", cherry.Description))
+	categoryLabel := widget.NewLabel(fmt.Sprintf("Category: %s", cherry.Category))
+	stackLabel := widget.NewLabel(fmt.Sprintf("Stack: %s", cherry.Stack))
+	sizeLabel := widget.NewLabel(fmt.Sprintf("Size: %s", cherry.Size))
+	pathLabel := widget.NewLabel(fmt.Sprintf("Path: %s", cherry.Path))
+	createdLabel := widget.NewLabel(fmt.Sprintf("Created: %s", formatTime(cherry.CreatedAt)))
+	
+	var lastRunLabel *widget.Label
+	if cherry.LastRun != nil {
+		lastRunLabel = widget.NewLabel(fmt.Sprintf("Last Run: %s", formatTime(*cherry.LastRun)))
+	} else {
+		lastRunLabel = widget.NewLabel("Last Run: Never")
+	}
+
+	statusLabel := widget.NewLabel(fmt.Sprintf("Status: %s", func() string {
+		if cherry.IsRunning {
+			return "Running"
+		}
+		return "Stopped"
+	}()))
+
+	content := container.NewVBox(
+		detailsLabel,
+		widget.NewSeparator(),
+		nameLabel,
+		descLabel,
+		categoryLabel,
+		stackLabel,
+		sizeLabel,
+		pathLabel,
+		createdLabel,
+		lastRunLabel,
+		statusLabel,
+	)
+
+	dialog.ShowCustom("Project Details", "Close", content, parent)
 }
 
 func showMarketplaceDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
@@ -604,6 +692,54 @@ func showCompileDialog(parent fyne.Window, cherryManager *CherryManager, refresh
 	)
 
 	dialog.ShowCustom("AI Compile Apps", "Close", content, parent)
+}
+
+func showMoreActionsMenu(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create more actions menu
+	menuLabel := widget.NewLabel("More Actions")
+	menuLabel.TextStyle.Bold = true
+
+	// Browse Templates button
+	browseTemplatesButton := widget.NewButton("📋 Browse Templates", func() {
+		showTemplatesDialog(parent, cherryManager, refreshList, updateStats)
+	})
+
+	// Compile Apps button
+	compileAppsButton := widget.NewButton("⚡ Compile Apps", func() {
+		showCompileDialog(parent, cherryManager, refreshList, updateStats)
+	})
+
+	// Import Project button
+	importProjectButton := widget.NewButton("📁 Import Project", func() {
+		showImportDialog(parent, cherryManager, refreshList, updateStats)
+	})
+
+	// Export Projects button
+	exportProjectsButton := widget.NewButton("📤 Export Projects", func() {
+		showExportDialog(parent, cherryManager, refreshList, updateStats)
+	})
+
+	content := container.NewVBox(
+		menuLabel,
+		widget.NewSeparator(),
+		widget.NewLabel("Additional Tools:"),
+		browseTemplatesButton,
+		compileAppsButton,
+		widget.NewSeparator(),
+		widget.NewLabel("Project Management:"),
+		importProjectButton,
+		exportProjectsButton,
+	)
+
+	dialog.ShowCustom("More Actions", "Close", content, parent)
+}
+
+func showImportDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	dialog.ShowInformation("Import Project", "This feature will allow you to import existing projects from local files or URLs.", parent)
+}
+
+func showExportDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	dialog.ShowInformation("Export Projects", "This feature will allow you to export your projects for backup or sharing.", parent)
 }
 
 func showAIBuilderDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
