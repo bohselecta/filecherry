@@ -36,23 +36,27 @@ func NewCherryManager() *CherryManager {
 		cherries: []Cherry{
 			{
 				ID:          "1",
-				Name:        "Task Cherry",
-				Description: "Simple task management app",
-				Category:    "productivity",
-				Stack:       "go-gin",
-				Size:        "12 MB",
-				Path:        "",
-				CreatedAt:   time.Now(),
+				Name:        "Todo Desktop App",
+				Description: "A desktop todo application built with Go + Fyne",
+				Category:    "desktop",
+				Stack:       "go-fyne",
+				Size:        "15 MB",
+				Path:        "/projects/todo-desktop",
+				CreatedAt:   time.Now().Add(-24 * time.Hour),
+				LastRun:     &[]time.Time{time.Now().Add(-2 * time.Hour)}[0],
+				IsRunning:   false,
 			},
 			{
 				ID:          "2",
-				Name:        "Note Taker",
-				Description: "Quick note-taking utility",
-				Category:    "productivity",
-				Stack:       "static",
-				Size:        "800 KB",
-				Path:        "",
-				CreatedAt:   time.Now(),
+				Name:        "Chat Web App",
+				Description: "Real-time chat application with Bun + Hono",
+				Category:    "web",
+				Stack:       "bun-hono",
+				Size:        "8 MB",
+				Path:        "/projects/chat-web",
+				CreatedAt:   time.Now().Add(-12 * time.Hour),
+				LastRun:     &[]time.Time{time.Now().Add(-1 * time.Hour)}[0],
+				IsRunning:   true,
 			},
 		},
 	}
@@ -130,7 +134,7 @@ func main() {
 	title.TextStyle.Bold = true
 	title.Alignment = fyne.TextAlignCenter
 
-	subtitle := widget.NewLabel("Your Cherry Bowl & Project Manager")
+	subtitle := widget.NewLabel("Code Generator for Desktop & Web Apps")
 	subtitle.Alignment = fyne.TextAlignCenter
 
 	// Stats display
@@ -157,19 +161,19 @@ func main() {
 		}
 	}
 
-	// Add cherry button
-	addCherryButton := widget.NewButton("➕ Add Cherry", func() {
-		showAddCherryDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Generate App button
+	generateAppButton := widget.NewButton("🚀 Generate App", func() {
+		showGenerateAppDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Browse marketplace button
-	browseMarketplaceButton := widget.NewButton("🛒 Browse Marketplace", func() {
-		showMarketplaceDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Browse Templates button
+	browseTemplatesButton := widget.NewButton("📋 Browse Templates", func() {
+		showTemplatesDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
-	// Fireproof sync button
-	syncButton := widget.NewButton("🔥 Fireproof Sync", func() {
-		showFireproofSyncDialog(myWindow, cherryManager, refreshCherryList, updateStats)
+	// Build Projects button
+	buildProjectsButton := widget.NewButton("🔨 Build Projects", func() {
+		showBuildDialog(myWindow, cherryManager, refreshCherryList, updateStats)
 	})
 
 	// Settings button
@@ -216,8 +220,8 @@ func main() {
 
 	// Input container
 	inputContainer := container.NewVBox(
-		widget.NewLabel("Manage Your Cherry Bowl:"),
-		container.NewHBox(addCherryButton, browseMarketplaceButton, syncButton, settingsButton),
+		widget.NewLabel("Generate Applications:"),
+		container.NewHBox(generateAppButton, browseTemplatesButton, buildProjectsButton, settingsButton),
 	)
 
 	// Create hero section with main cherry
@@ -228,7 +232,7 @@ func main() {
 		heroCherry = Cherry{
 			ID:          "hero",
 			Name:        "Welcome to FileCherry!",
-			Description: "Your cherry bowl is empty. Browse the marketplace to add your first cherry!",
+			Description: "Generate desktop and web applications with TinyApp Factory. Choose a template and create your app!",
 			Category:    "welcome",
 			Stack:       "static",
 			Size:        "0 MB",
@@ -420,81 +424,124 @@ func formatTime(t time.Time) string {
 	return t.Format("Jan 2, 3:04 PM")
 }
 
-func showAddCherryDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
-	// Create add cherry dialog
+func showGenerateAppDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create app generation dialog
 	nameEntry := widget.NewEntry()
-	nameEntry.SetPlaceHolder("Cherry name")
+	nameEntry.SetPlaceHolder("App name")
 
 	descEntry := widget.NewEntry()
-	descEntry.SetPlaceHolder("Description")
+	descEntry.SetPlaceHolder("App description")
 
-	categorySelect := widget.NewSelect([]string{"productivity", "creative", "civic", "business", "personal"}, nil)
-	categorySelect.SetSelected("productivity")
+	appTypeSelect := widget.NewSelect([]string{"desktop", "web"}, nil)
+	appTypeSelect.SetSelected("desktop")
 
-	stackSelect := widget.NewSelect([]string{"go-gin", "go-fyne", "bun-hono", "rust-axum", "tauri-react", "static"}, nil)
-	stackSelect.SetSelected("go-gin")
+	stackSelect := widget.NewSelect([]string{"go-fyne", "tauri-react", "bun-hono", "rust-axum", "go-gin", "static"}, nil)
+	stackSelect.SetSelected("go-fyne")
 
 	content := container.NewVBox(
-		widget.NewLabel("Add New Cherry"),
+		widget.NewLabel("🚀 Generate New Application"),
 		widget.NewSeparator(),
 		nameEntry,
 		descEntry,
 		container.NewHBox(
-			widget.NewLabel("Category:"),
-			categorySelect,
+			widget.NewLabel("App Type:"),
+			appTypeSelect,
 		),
 		container.NewHBox(
 			widget.NewLabel("Stack:"),
 			stackSelect,
 		),
+		widget.NewSeparator(),
+		widget.NewLabel("This will create a new project using TinyApp Factory CLI"),
 	)
 
-	dialog.ShowCustomConfirm("Add Cherry", "Add", "Cancel", content, func(confirmed bool) {
+	dialog.ShowCustomConfirm("Generate App", "Generate", "Cancel", content, func(confirmed bool) {
 		if confirmed {
 			name := nameEntry.Text
 			desc := descEntry.Text
-			category := categorySelect.Selected
+			appType := appTypeSelect.Selected
 			stack := stackSelect.Selected
 			if name != "" && desc != "" {
-				cherryManager.AddCherry(name, desc, category, stack)
+				// Add to cherry manager as a generated project
+				cherryManager.AddCherry(name, desc, appType, stack)
 				refreshList()
 				updateStats()
-				dialog.ShowInformation("Success", fmt.Sprintf("Cherry '%s' added to your bowl!", name), parent)
+				dialog.ShowInformation("App Generated", fmt.Sprintf("App '%s' has been generated using %s stack!", name, stack), parent)
 			}
 		}
 	}, parent)
 }
 
-func showFireproofSyncDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
-	// Create Fireproof sync dialog
-	syncLabel := widget.NewLabel("🔥 Fireproof Sync")
-	syncLabel.TextStyle.Bold = true
+func showTemplatesDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create templates dialog
+	templatesLabel := widget.NewLabel("📋 Available Templates")
+	templatesLabel.TextStyle.Bold = true
 
-	infoLabel := widget.NewLabel("Sync your cherry bowl with Fireproof database for offline-first storage and sharing.")
+	templates := []struct {
+		name        string
+		description string
+		stack       string
+		type_       string
+	}{
+		{"Todo App", "A simple todo list application", "go-fyne", "desktop"},
+		{"Chat App", "Real-time chat application", "bun-hono", "web"},
+		{"File Manager", "Desktop file management tool", "tauri-react", "desktop"},
+		{"API Server", "RESTful API server", "rust-axum", "web"},
+		{"Static Site", "Simple static website", "static", "web"},
+	}
 
-	// Sync options
-	enableSync := widget.NewCheck("Enable Fireproof Sync", nil)
-	enableSync.SetChecked(true)
-
-	sharePublic := widget.NewCheck("Share cherry bowl publicly", nil)
-	sharePublic.SetChecked(false)
+	var templateButtons []fyne.CanvasObject
+	for _, template := range templates {
+		template := template // capture loop variable
+		btn := widget.NewButton(fmt.Sprintf("%s (%s)", template.name, template.stack), func() {
+			cherryManager.AddCherry(template.name, template.description, template.type_, template.stack)
+			refreshList()
+			updateStats()
+			dialog.ShowInformation("Template Added", fmt.Sprintf("Template '%s' added to your projects!", template.name), parent)
+		})
+		templateButtons = append(templateButtons, btn)
+	}
 
 	content := container.NewVBox(
-		syncLabel,
+		templatesLabel,
 		widget.NewSeparator(),
-		infoLabel,
+		widget.NewLabel("Choose a template to add to your projects:"),
 		widget.NewSeparator(),
-		enableSync,
-		sharePublic,
-		widget.NewSeparator(),
-		widget.NewLabel("Your cherry bowl will be stored locally and can be shared with others using Fireproof's peer-to-peer sync."),
+		container.NewVBox(templateButtons...),
 	)
 
-	dialog.ShowCustomConfirm("Fireproof Sync", "Enable Sync", "Cancel", content, func(confirmed bool) {
-		if confirmed {
-			if enableSync.Checked {
-				dialog.ShowInformation("Fireproof Sync Enabled", "Your cherry bowl is now syncing with Fireproof! Changes will be stored locally and can be shared.", parent)
-			}
-		}
-	}, parent)
+	dialog.ShowCustom("Browse Templates", "Close", content, parent)
+}
+
+func showBuildDialog(parent fyne.Window, cherryManager *CherryManager, refreshList func(), updateStats func()) {
+	// Create build dialog
+	buildLabel := widget.NewLabel("🔨 Build Projects")
+	buildLabel.TextStyle.Bold = true
+
+	cherries := cherryManager.GetCherries()
+	if len(cherries) == 0 {
+		dialog.ShowInformation("No Projects", "You don't have any projects to build yet. Generate an app first!", parent)
+		return
+	}
+
+	var buildButtons []fyne.CanvasObject
+	for _, cherry := range cherries {
+		cherry := cherry // capture loop variable
+		btn := widget.NewButton(fmt.Sprintf("Build %s (%s)", cherry.Name, cherry.Stack), func() {
+			dialog.ShowInformation("Building", fmt.Sprintf("Building %s using TinyApp Factory CLI...", cherry.Name), parent)
+		})
+		buildButtons = append(buildButtons, btn)
+	}
+
+	content := container.NewVBox(
+		buildLabel,
+		widget.NewSeparator(),
+		widget.NewLabel("Build your generated projects:"),
+		widget.NewSeparator(),
+		container.NewVBox(buildButtons...),
+		widget.NewSeparator(),
+		widget.NewLabel("This will compile and package your applications for distribution."),
+	)
+
+	dialog.ShowCustom("Build Projects", "Close", content, parent)
 }
