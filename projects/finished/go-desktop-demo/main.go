@@ -18,7 +18,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-// Cherry represents a portable application
+// Cherry represents a portable application description
 type Cherry struct {
 	ID          string
 	Name        string
@@ -28,8 +28,8 @@ type Cherry struct {
 	Size        string
 	Path        string
 	CreatedAt   time.Time
-	LastRun     *time.Time
-	IsRunning   bool
+	LastCompiled *time.Time
+	IsCompiled   bool
 }
 
 // CherryManager handles cherry operations
@@ -49,8 +49,8 @@ func NewCherryManager() *CherryManager {
 				Size:        "15 MB",
 				Path:        "/projects/todo-desktop",
 				CreatedAt:   time.Now().Add(-24 * time.Hour),
-				LastRun:     &[]time.Time{time.Now().Add(-2 * time.Hour)}[0],
-				IsRunning:   false,
+				LastCompiled: &[]time.Time{time.Now().Add(-2 * time.Hour)}[0],
+				IsCompiled:   true,
 			},
 			{
 				ID:          "2",
@@ -61,8 +61,8 @@ func NewCherryManager() *CherryManager {
 				Size:        "8 MB",
 				Path:        "/projects/chat-web",
 				CreatedAt:   time.Now().Add(-12 * time.Hour),
-				LastRun:     &[]time.Time{time.Now().Add(-1 * time.Hour)}[0],
-				IsRunning:   true,
+				LastCompiled: nil,
+				IsCompiled:   false,
 			},
 		},
 	}
@@ -95,16 +95,16 @@ func (cm *CherryManager) GetCherries() []Cherry {
 	return cm.cherries
 }
 
-func (cm *CherryManager) GetStats() (total, running, stopped int) {
+func (cm *CherryManager) GetStats() (total, compiled, pending int) {
 	total = len(cm.cherries)
 	for _, cherry := range cm.cherries {
-		if cherry.IsRunning {
-			running++
+		if cherry.IsCompiled {
+			compiled++
 		} else {
-			stopped++
+			pending++
 		}
 	}
-	return
+	return total, compiled, pending
 }
 
 func estimateSize(stack string) string {
@@ -140,15 +140,15 @@ func main() {
 	title.TextStyle.Bold = true
 	title.Alignment = fyne.TextAlignCenter
 
-	subtitle := widget.NewLabel("Code Generator for Desktop & Web Apps")
+	subtitle := widget.NewLabel("File Manager & App Builder for Cherry Descriptions")
 	subtitle.Alignment = fyne.TextAlignCenter
 
 	// Stats display (more compact)
 	statsBinding := binding.NewString()
 	updateStats := func() {
-		total, running, stopped := cherryManager.GetStats()
-		statsBinding.Set(fmt.Sprintf("%d projects • %d running • %d stopped", 
-			total, running, stopped))
+		total, compiled, pending := cherryManager.GetStats()
+		statsBinding.Set(fmt.Sprintf("%d cherries • %d compiled • %d pending", 
+			total, compiled, pending))
 	}
 	updateStats()
 
@@ -199,19 +199,19 @@ func main() {
 	filterAll := widget.NewButton("All", func() {
 		refreshCherryList()
 	})
-	filterOpen := widget.NewButton("Open", func() {
+	filterCompiled := widget.NewButton("Compiled", func() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
-			if cherry.IsRunning {
+			if cherry.IsCompiled {
 				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats, myWindow)
 				cherryList.Add(cherryItem)
 			}
 		}
 	})
-	filterClosed := widget.NewButton("Closed", func() {
+	filterPending := widget.NewButton("Pending", func() {
 		cherryList.RemoveAll()
 		for _, cherry := range cherryManager.GetCherries() {
-			if !cherry.IsRunning {
+			if !cherry.IsCompiled {
 				cherryItem := createCherryItem(cherry, cherryManager, refreshCherryList, updateStats, myWindow)
 				cherryList.Add(cherryItem)
 			}
@@ -221,8 +221,8 @@ func main() {
 	filterContainer := container.NewHBox(
 		widget.NewLabel("Filters:"),
 		filterAll,
-		filterOpen,
-		filterClosed,
+		filterCompiled,
+		filterPending,
 	)
 
 	// Primary action container (prominent)
@@ -299,22 +299,22 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 	// Create beautiful cherry card
 	cherryCard := NewCherryCard(cherry, 
 		func() {
-			// Open cherry functionality
+			// Compile cherry functionality
 			for i, c := range cherryManager.cherries {
 				if c.ID == cherry.ID {
-					cherryManager.cherries[i].IsRunning = true
+					cherryManager.cherries[i].IsCompiled = true
 					now := time.Now()
-					cherryManager.cherries[i].LastRun = &now
+					cherryManager.cherries[i].LastCompiled = &now
 					break
 				}
 			}
 			refreshList()
 			updateStats()
-			dialog.ShowInformation("Cherry Opened", fmt.Sprintf("Opening '%s'...", cherry.Name), parent)
+			dialog.ShowInformation("Cherry Compiled", fmt.Sprintf("Compiling '%s' into executable...", cherry.Name), parent)
 		},
 		func() {
 			// Delete functionality with confirmation
-			dialog.ShowConfirm("Delete Project", 
+			dialog.ShowConfirm("Delete Cherry", 
 				fmt.Sprintf("Are you sure you want to delete '%s'? This action cannot be undone.", cherry.Name),
 				func(confirmed bool) {
 					if confirmed {
@@ -332,10 +332,21 @@ func createCherryItem(cherry Cherry, cherryManager *CherryManager, refreshList f
 		updateStats,
 	)
 
-	// Add contextual actions for this specific project
+	// Add contextual actions for this specific cherry
 	contextualActions := container.NewHBox(
 		widget.NewButton("⚡ Compile", func() {
-			showCompileDialog(parent, cherryManager, refreshList, updateStats)
+			// Compile this specific cherry
+			for i, c := range cherryManager.cherries {
+				if c.ID == cherry.ID {
+					cherryManager.cherries[i].IsCompiled = true
+					now := time.Now()
+					cherryManager.cherries[i].LastCompiled = &now
+					break
+				}
+			}
+			refreshList()
+			updateStats()
+			dialog.ShowInformation("Compiled", fmt.Sprintf("Compiled '%s' into executable!", cherry.Name), parent)
 		}),
 		widget.NewButton("📁 Open Folder", func() {
 			dialog.ShowInformation("Open Folder", fmt.Sprintf("Opening folder for %s...", cherry.Name), parent)
@@ -366,18 +377,18 @@ func showProjectDetailsDialog(parent fyne.Window, cherry Cherry) {
 	pathLabel := widget.NewLabel(fmt.Sprintf("Path: %s", cherry.Path))
 	createdLabel := widget.NewLabel(fmt.Sprintf("Created: %s", formatTime(cherry.CreatedAt)))
 	
-	var lastRunLabel *widget.Label
-	if cherry.LastRun != nil {
-		lastRunLabel = widget.NewLabel(fmt.Sprintf("Last Run: %s", formatTime(*cherry.LastRun)))
+	var lastCompiledLabel *widget.Label
+	if cherry.LastCompiled != nil {
+		lastCompiledLabel = widget.NewLabel(fmt.Sprintf("Last Compiled: %s", formatTime(*cherry.LastCompiled)))
 	} else {
-		lastRunLabel = widget.NewLabel("Last Run: Never")
+		lastCompiledLabel = widget.NewLabel("Last Compiled: Never")
 	}
 
 	statusLabel := widget.NewLabel(fmt.Sprintf("Status: %s", func() string {
-		if cherry.IsRunning {
-			return "Running"
+		if cherry.IsCompiled {
+			return "Compiled"
 		}
-		return "Stopped"
+		return "Pending"
 	}()))
 
 	content := container.NewVBox(
@@ -390,7 +401,7 @@ func showProjectDetailsDialog(parent fyne.Window, cherry Cherry) {
 		sizeLabel,
 		pathLabel,
 		createdLabel,
-		lastRunLabel,
+		lastCompiledLabel,
 		statusLabel,
 	)
 

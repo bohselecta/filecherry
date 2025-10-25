@@ -139,27 +139,27 @@ func (r *cherryCardRenderer) Refresh() {
 	r.stackLabel.SetText(fmt.Sprintf("%s • %s", cherry.Stack, cherry.Size))
 	
 	// Update status
-	if cherry.IsRunning {
-		r.statusLabel.SetText("🟢")
-		r.statusLabel.SetText("Running")
+	if cherry.IsCompiled {
+		r.statusLabel.SetText("✅")
+		r.statusLabel.SetText("Compiled")
 	} else {
-		r.statusLabel.SetText("⏸️")
-		r.statusLabel.SetText("Stopped")
+		r.statusLabel.SetText("⏳")
+		r.statusLabel.SetText("Pending")
 	}
 	
 	// Update time
 	r.timeLabel.SetText(formatTime(cherry.CreatedAt))
 	r.timeLabel.TextStyle.Italic = true
 	
-	// Update open button
-	r.runButton.SetText("📂 Open")
+	// Update compile button
+	r.runButton.SetText("⚡ Compile")
 	r.runButton.Importance = widget.HighImportance
 	
 	// Update background color based on status
-	if cherry.IsRunning {
-		r.background.FillColor = color.RGBA{R: 30, G: 60, B: 30, A: 255} // Dark green for running
+	if cherry.IsCompiled {
+		r.background.FillColor = color.RGBA{R: 30, G: 60, B: 30, A: 255} // Dark green for compiled
 	} else {
-		r.background.FillColor = color.RGBA{R: 30, G: 30, B: 30, A: 255} // Default dark
+		r.background.FillColor = color.RGBA{R: 60, G: 30, B: 10, A: 255} // Dark orange for pending
 	}
 	
 	// Refresh all components
@@ -216,17 +216,17 @@ func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 	
 	stackLabel := widget.NewLabel(fmt.Sprintf("%s • %s", cherry.Stack, cherry.Size))
 	
-	statusLabel := widget.NewLabel("⏸️")
-	if cherry.IsRunning {
-		statusLabel.SetText("🟢")
+	statusLabel := widget.NewLabel("⏳")
+	if cherry.IsCompiled {
+		statusLabel.SetText("✅")
 	}
 	
 	timeLabel := widget.NewLabel(formatTime(cherry.CreatedAt))
 	timeLabel.TextStyle.Italic = true
 	
 	// Buttons with cherry styling
-	openButton := widget.NewButton("📂 Open", card.onRun)
-	openButton.Importance = widget.HighImportance
+	compileButton := widget.NewButton("⚡ Compile", card.onRun)
+	compileButton.Importance = widget.HighImportance
 	
 	shareButton := widget.NewButton("📤 Share", card.onShare)
 	shareButton.Importance = widget.MediumImportance
@@ -243,7 +243,7 @@ func NewCherryCardRenderer(card *CherryCard) *cherryCardRenderer {
 		stackLabel:     stackLabel,
 		statusLabel:    statusLabel,
 		timeLabel:      timeLabel,
-		runButton:      openButton,
+		runButton:      compileButton,
 		shareButton:    shareButton,
 		deleteButton:   deleteButton,
 	}
@@ -349,14 +349,14 @@ func (r *heroCardRenderer) Refresh() {
 	r.stackLabel.Alignment = fyne.TextAlignCenter
 	
 	// Update status
-	if cherry.IsRunning {
-		r.statusLabel.SetText("🟢 Running")
+	if cherry.IsCompiled {
+		r.statusLabel.SetText("✅ Compiled")
 	} else {
-		r.statusLabel.SetText("⏸️ Stopped")
+		r.statusLabel.SetText("⏳ Pending")
 	}
 	
-	// Update open button
-	r.runButton.SetText("📂 Open Cherry")
+	// Update compile button
+	r.runButton.SetText("⚡ Compile Cherry")
 	r.runButton.Importance = widget.HighImportance
 	
 	// Update background with gradient effect
@@ -413,16 +413,16 @@ func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 	stackLabel := widget.NewLabel(fmt.Sprintf("%s • %s", cherry.Stack, cherry.Size))
 	stackLabel.Alignment = fyne.TextAlignCenter
 	
-	statusLabel := widget.NewLabel("⏸️ Stopped")
-	if cherry.IsRunning {
-		statusLabel.SetText("🟢 Running")
+	statusLabel := widget.NewLabel("⏳ Pending")
+	if cherry.IsCompiled {
+		statusLabel.SetText("✅ Compiled")
 	}
 	
-	// Open button with cherry styling
-	openButton := widget.NewButton("📂 Open Cherry", func() {
+	// Compile button with cherry styling
+	compileButton := widget.NewButton("⚡ Compile Cherry", func() {
 		// This would be connected to the cherry manager
 	})
-	openButton.Importance = widget.HighImportance
+	compileButton.Importance = widget.HighImportance
 	
 	return &heroCardRenderer{
 		hero:           hero,
@@ -432,6 +432,6 @@ func NewHeroCardRenderer(hero *HeroCard) *heroCardRenderer {
 		descLabel:      descLabel,
 		stackLabel:     stackLabel,
 		statusLabel:    statusLabel,
-		runButton:      openButton,
+		runButton:      compileButton,
 	}
 }
